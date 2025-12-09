@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0D0D0D;
+  /* Midnight Black */
+  --foreground: #FFFFFF;
+  --midnight-900: #000000;
+  --midnight-800: #0D0D0D;
+  --midnight-700: #1A1A1A;
+  --grid-cyan: #00E5FF;
+  --electric-blue: #1A73FF;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-urbanist), var(--font-geist-sans), sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+
+  /* Brand Colors */
+  --color-midnight-DEFAULT: var(--midnight-800);
+  --color-midnight-900: var(--midnight-900);
+  --color-midnight-800: var(--midnight-800);
+  --color-midnight-700: var(--midnight-700);
+
+  --color-grid-DEFAULT: var(--grid-cyan);
+  --color-grid-cyan: var(--grid-cyan);
+
+  --color-electric-DEFAULT: var(--electric-blue);
+  --color-electric-blue: var(--electric-blue);
+}
+
+/* Force dark mode behavior as default for ProGrid */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-urbanist), sans-serif;
+}
+
+
+/* Custom Utilities */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(0, 229, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.box-shadow-glow {
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+}
+
+@layer utilities {
+  .text-shadow-glow {
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+  }
+}
