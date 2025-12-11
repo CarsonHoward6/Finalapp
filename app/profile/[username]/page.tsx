@@ -5,6 +5,7 @@ import { ProfileStats } from "@/components/profile/ProfileStats";
 import { ProfileGallery } from "@/components/profile/ProfileGallery";
 import { FollowButton } from "@/components/profile/FollowButton";
 import { LiveIndicator } from "@/components/profile/LiveIndicator";
+import { FloatingDashboardButton } from "@/components/layout/FloatingDashboardButton";
 import { getFollowCounts, isFollowing } from "@/app/actions/followers";
 import Link from "next/link";
 
@@ -45,6 +46,7 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
 
     return (
         <div className="min-h-screen bg-midnight-900">
+            <FloatingDashboardButton />
             {/* Header Banner */}
             <div className="h-48 bg-gradient-to-r from-electric-blue/20 via-midnight-800 to-grid-cyan/20 relative">
                 <div className="absolute inset-0 bg-grid-pattern opacity-10" />

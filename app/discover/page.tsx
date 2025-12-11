@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { StreamCard } from "@/components/discover/StreamCard";
+import { FloatingDashboardButton } from "@/components/layout/FloatingDashboardButton";
 import { Radio, Search, Filter, TrendingUp, Users, Sparkles } from "lucide-react";
 import Link from "next/link";
 
@@ -42,6 +43,7 @@ export default async function DiscoverPage() {
 
     return (
         <div className="min-h-screen bg-midnight-900">
+            <FloatingDashboardButton />
             {/* Hero Header */}
             <div className="relative bg-gradient-to-b from-electric-blue/10 via-midnight-900 to-midnight-900 pt-8 pb-16">
                 <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />

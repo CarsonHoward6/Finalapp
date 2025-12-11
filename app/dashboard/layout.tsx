@@ -1,4 +1,6 @@
 import { Sidebar } from "@/components/layout/Sidebar";
+import { DashboardContent } from "@/components/layout/DashboardContent";
+import { AISupportChat } from "@/components/layout/AISupportChat";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -36,11 +38,10 @@ export default async function DashboardLayout({
     return (
         <div className="flex min-h-screen bg-midnight-900 text-foreground">
             <Sidebar />
-            <main className="flex-1 ml-64 p-8 overflow-y-auto h-screen">
-                <div className="max-w-7xl mx-auto">
-                    {children}
-                </div>
-            </main>
+            <DashboardContent>
+                {children}
+            </DashboardContent>
+            <AISupportChat />
         </div>
     );
 }

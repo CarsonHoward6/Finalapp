@@ -102,7 +102,7 @@ export function AboutSection() {
             </span>
                     </h2>
                     <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                        ProGrid is the all-in-one platform for competitive gaming.
+                        ProGrid is the all-in-one platform for competitive people.
                         Organize tournaments, build teams, track stats, and connect
                         with the community.
                     </p>

@@ -59,7 +59,10 @@ export async function deletePost(postId: string) {
 // Get feed posts (all or followed users)
 export async function getFeedPosts(limit: number = 20, offset: number = 0) {
     const supabase = await createClient();
-    if (!supabase) return [];
+    if (!supabase) {
+        console.error("Supabase client not initialized");
+        return [];
+    }
 
     const { data, error } = await supabase
         .from("posts")
@@ -73,7 +76,12 @@ export async function getFeedPosts(limit: number = 20, offset: number = 0) {
         .range(offset, offset + limit - 1);
 
     if (error) {
-        console.error("Get feed error:", error);
+        console.error("Get feed error - Full details:", {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+        });
         return [];
     }
 

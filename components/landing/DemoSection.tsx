@@ -7,6 +7,21 @@ import { useState } from "react";
 export function DemoSection() {
     const [isPlaying, setIsPlaying] = useState(false);
 
+    // Video URL from environment variable
+    // Can be a direct video URL (.mp4) or YouTube embed URL
+    const videoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL;
+
+    // Check if it's a YouTube URL
+    const isYouTube = videoUrl?.includes("youtube.com") || videoUrl?.includes("youtu.be");
+
+    // Extract YouTube video ID if applicable
+    const getYouTubeEmbedUrl = (url: string) => {
+        const videoId = url.includes("youtu.be")
+            ? url.split("youtu.be/")[1]?.split("?")[0]
+            : url.split("v=")[1]?.split("&")[0];
+        return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : null;
+    };
+
     return (
         <section className="py-24 px-8 bg-midnight-950 relative overflow-hidden">
             {/* Background gradient */}
@@ -65,18 +80,46 @@ export function DemoSection() {
                         </motion.button>
                     )}
 
-                    {/* Video embed (placeholder - replace with actual video) */}
+                    {/* Video embed */}
                     {isPlaying && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-midnight-900">
-                            <div className="text-center text-gray-400">
-                                <p className="text-lg mb-4">Demo video coming soon!</p>
-                                <button
-                                    onClick={() => setIsPlaying(false)}
-                                    className="text-electric-blue hover:underline"
-                                >
-                                    Close
-                                </button>
-                            </div>
+                        <div className="absolute inset-0 bg-midnight-900">
+                            {videoUrl ? (
+                                isYouTube ? (
+                                    // YouTube embed
+                                    <iframe
+                                        src={getYouTubeEmbedUrl(videoUrl) || ""}
+                                        className="w-full h-full"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    />
+                                ) : (
+                                    // Direct video file
+                                    <video
+                                        src={videoUrl}
+                                        className="w-full h-full"
+                                        controls
+                                        autoPlay
+                                        onEnded={() => setIsPlaying(false)}
+                                    >
+                                        Your browser does not support the video tag.
+                                    </video>
+                                )
+                            ) : (
+                                // Placeholder when no video is configured
+                                <div className="flex flex-col items-center justify-center h-full text-gray-400 p-8">
+                                    <p className="text-lg mb-4 text-center">Demo video coming soon!</p>
+                                    <p className="text-sm text-gray-500 mb-6 text-center max-w-md">
+                                        To add your demo video, set NEXT_PUBLIC_DEMO_VIDEO_URL in your .env.local file.
+                                        See DEMO_VIDEO_GUIDE.md for instructions.
+                                    </p>
+                                    <button
+                                        onClick={() => setIsPlaying(false)}
+                                        className="px-6 py-2 bg-electric-blue text-white rounded-lg hover:bg-electric-blue/80 transition-colors"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
 

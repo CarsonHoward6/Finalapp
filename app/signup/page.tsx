@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/ui/branding/Logo";
-import { Mail, Lock, User, Loader2, Check } from "lucide-react";
+import { Mail, Lock, User, Loader2, Check, UserPlus } from "lucide-react";
 
 export default function SignupPage() {
     const [email, setEmail] = useState("");
@@ -15,8 +15,33 @@ export default function SignupPage() {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [referrerId, setReferrerId] = useState<string | null>(null);
+    const [inviterName, setInviterName] = useState<string | null>(null);
     const router = useRouter();
+    const searchParams = useSearchParams();
     const supabase = createClient();
+
+    // Check for referral parameter
+    useEffect(() => {
+        const ref = searchParams.get('ref');
+        if (ref) {
+            setReferrerId(ref);
+            // Fetch inviter's name
+            fetchInviterName(ref);
+        }
+    }, [searchParams]);
+
+    const fetchInviterName = async (userId: string) => {
+        const { data } = await supabase
+            .from('profiles')
+            .select('full_name, username')
+            .eq('id', userId)
+            .single();
+
+        if (data) {
+            setInviterName(data.full_name || data.username || 'A friend');
+        }
+    };
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -100,6 +125,21 @@ export default function SignupPage() {
                     <h1 className="text-3xl font-bold text-white mb-2">Join ProGrid</h1>
                     <p className="text-gray-400">Create your competitive gaming profile</p>
                 </div>
+
+                {/* Invitation Banner */}
+                {inviterName && (
+                    <div className="mb-6 p-4 bg-gradient-to-r from-electric-blue/10 to-grid-cyan/10 border border-electric-blue/20 rounded-xl">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-electric-blue/20 rounded-full flex items-center justify-center">
+                                <UserPlus className="w-5 h-5 text-electric-blue" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-400">You've been invited by</p>
+                                <p className="font-semibold text-white">{inviterName}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Signup Form */}
                 <div className="bg-midnight-800/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
