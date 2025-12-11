@@ -17,7 +17,8 @@ import {
     Newspaper,
     ChevronLeft,
     ChevronRight,
-    UserPlus
+    UserPlus,
+    Film
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useState, useEffect } from "react";
@@ -32,6 +33,7 @@ const navItems = [
     { name: "Tournaments", href: "/dashboard/tournaments", icon: Trophy },
     { name: "Calendar", href: "/dashboard/calendar", icon: Calendar },
     { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+    { name: "Video Editor", href: "/dashboard/editor", icon: Film },
     { name: "Matches", href: "/dashboard/matches", icon: Swords },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];

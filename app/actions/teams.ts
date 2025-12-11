@@ -15,6 +15,7 @@ export async function createTeam(formData: FormData) {
 
     const name = formData.get("name") as string;
     const slug = formData.get("slug") as string;
+    const description = formData.get("description") as string || "";
     const primaryColor = formData.get("primaryColor") as string || "#0D0D0D";
     const secondaryColor = formData.get("secondaryColor") as string || "#00E5FF";
 
@@ -24,6 +25,7 @@ export async function createTeam(formData: FormData) {
         .insert({
             name,
             slug,
+            description,
             primary_color: primaryColor,
             secondary_color: secondaryColor,
             owner_id: user.id

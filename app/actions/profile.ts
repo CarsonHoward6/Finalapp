@@ -35,6 +35,36 @@ export async function updateProfile(formData: FormData) {
     }
 
     revalidatePath("/dashboard/profile");
+    revalidatePath("/dashboard/settings");
+}
+
+// Update avatar URL
+export async function updateAvatar(avatarUrl: string | null) {
+    const supabase = await createClient();
+    if (!supabase) throw new Error("Database not configured");
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new Error("Unauthorized");
+    }
+
+    const { error } = await supabase
+        .from("profiles")
+        .update({
+            avatar_url: avatarUrl,
+            updated_at: new Date().toISOString()
+        })
+        .eq("id", user.id);
+
+    if (error) {
+        console.error("Avatar update error:", error);
+        throw new Error("Failed to update avatar");
+    }
+
+    revalidatePath("/dashboard/profile");
+    revalidatePath("/dashboard/settings");
+    revalidatePath("/feed");
+    return { success: true };
 }
 
 // Update gaming stats

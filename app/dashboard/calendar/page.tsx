@@ -1,10 +1,20 @@
 import { createClient } from "@/utils/supabase/server";
 import { Calendar, Trophy, Clock } from "lucide-react";
+import { CreateEventModal } from "@/components/calendar/CreateEventModal";
+import { getCalendarEvents } from "@/app/actions/calendar";
 
 export default async function CalendarPage() {
     const supabase = await createClient();
     if (!supabase) return <div className="p-8 text-gray-500">Database not configured</div>;
     const { data: { user } } = await supabase.auth.getUser();
+
+    // Fetch user's teams for event association
+    const { data: userTeams } = await supabase
+        .from("team_members")
+        .select("team:teams(id, name)")
+        .eq("user_id", user?.id);
+
+    const teams = userTeams?.map(t => (t.team as any)).filter(Boolean) || [];
 
     // Fetch all tournaments the user organizes or participates in
     const { data: tournaments } = await supabase
@@ -21,6 +31,9 @@ export default async function CalendarPage() {
         .order("scheduled_time", { ascending: true })
         .limit(20);
 
+    // Fetch custom calendar events
+    const customEvents = await getCalendarEvents();
+
     // Generate a simple list-based calendar view (MVP)
     const events = [
         ...(tournaments?.map(t => ({
@@ -29,7 +42,8 @@ export default async function CalendarPage() {
             title: t.name,
             date: t.start_date,
             status: t.status,
-            link: `/dashboard/tournaments/${t.id}`
+            link: `/dashboard/tournaments/${t.id}`,
+            color: "bg-electric-blue"
         })) || []),
         ...(matches?.map(m => ({
             id: `m-${m.id}`,
@@ -37,43 +51,69 @@ export default async function CalendarPage() {
             title: `${(m.tournament as any)?.name || 'Match'} - ${m.round_name}`,
             date: m.scheduled_time,
             status: m.status,
-            link: `/matches/${m.id}`
+            link: `/matches/${m.id}`,
+            color: "bg-red-500"
+        })) || []),
+        ...(customEvents?.map(e => ({
+            id: `e-${e.id}`,
+            type: e.event_type,
+            title: e.title,
+            date: e.start_date,
+            status: "scheduled",
+            link: null,
+            color: e.event_type === "team_practice" ? "bg-green-500" :
+                   e.event_type === "meeting" ? "bg-purple-500" :
+                   e.event_type === "personal" ? "bg-blue-500" : "bg-gray-500",
+            location: e.location,
+            description: e.description
         })) || [])
     ].sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime());
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
-                <Calendar className="w-8 h-8 text-grid-cyan" /> Events Calendar
-            </h1>
+            <div className="flex items-center justify-between mb-8">
+                <h1 className="text-3xl font-bold flex items-center gap-3">
+                    <Calendar className="w-8 h-8 text-grid-cyan" /> Events Calendar
+                </h1>
+                <CreateEventModal teams={teams} />
+            </div>
 
             <div className="bg-midnight-800 border border-white/5 rounded-xl p-6">
                 {events.length === 0 ? (
                     <p className="text-gray-500 text-center py-12">No upcoming events scheduled.</p>
                 ) : (
                     <div className="space-y-4">
-                        {events.map((event) => (
-                            <a
-                                key={event.id}
-                                href={event.link}
-                                className="flex items-center gap-4 p-4 bg-midnight-900 rounded-lg border border-white/5 hover:border-grid-cyan/50 transition-all"
-                            >
-                                <div className={`w-2 h-full min-h-[40px] rounded-full ${event.type === 'tournament' ? 'bg-electric-blue' : 'bg-grid-cyan'}`} />
-                                <div className="flex-1">
-                                    <p className="font-medium text-white">{event.title}</p>
-                                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                                        <Clock className="w-3 h-3" />
-                                        {event.date ? new Date(event.date).toLocaleString() : "Date TBD"}
-                                    </p>
-                                </div>
-                                <span className={`text-xs uppercase font-bold tracking-wider ${event.status === 'live' ? 'text-red-500' :
-                                    event.status === 'ongoing' ? 'text-green-400' :
-                                        'text-gray-500'
-                                    }`}>
-                                    {event.status}
-                                </span>
-                            </a>
-                        ))}
+                        {events.map((event) => {
+                            const Component = event.link ? "a" : "div";
+                            return (
+                                <Component
+                                    key={event.id}
+                                    {...(event.link ? { href: event.link } : {})}
+                                    className={`flex items-center gap-4 p-4 bg-midnight-900 rounded-lg border border-white/5 ${event.link ? 'hover:border-grid-cyan/50 cursor-pointer' : ''} transition-all`}
+                                >
+                                    <div className={`w-2 h-full min-h-[40px] rounded-full ${event.color || 'bg-gray-500'}`} />
+                                    <div className="flex-1">
+                                        <p className="font-medium text-white">{event.title}</p>
+                                        {event.description && (
+                                            <p className="text-sm text-gray-400 mt-1">{event.description}</p>
+                                        )}
+                                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                                            <Clock className="w-3 h-3" />
+                                            {event.date ? new Date(event.date).toLocaleString() : "Date TBD"}
+                                            {event.location && ` • ${event.location}`}
+                                        </p>
+                                    </div>
+                                    {event.status && (
+                                        <span className={`text-xs uppercase font-bold tracking-wider ${event.status === 'live' ? 'text-red-500' :
+                                            event.status === 'ongoing' ? 'text-green-400' :
+                                                'text-gray-500'
+                                            }`}>
+                                            {event.status}
+                                        </span>
+                                    )}
+                                </Component>
+                            );
+                        })}
                     </div>
                 )}
             </div>

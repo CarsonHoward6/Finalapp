@@ -4,16 +4,24 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Image, Video, X, Send, Loader2 } from "lucide-react";
 import { createPost } from "@/app/actions/posts";
+import { uploadFile } from "@/app/actions/storage";
 
 interface CreatePostProps {
     userAvatar?: string | null;
     onPostCreated?: () => void;
 }
 
+interface MediaFile {
+    file: File;
+    preview: string;
+    type: "image" | "video";
+}
+
 export function CreatePost({ userAvatar, onPostCreated }: CreatePostProps) {
     const [content, setContent] = useState("");
-    const [mediaFiles, setMediaFiles] = useState<{ url: string; type: "image" | "video" }[]>([]);
+    const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,13 +29,26 @@ export function CreatePost({ userAvatar, onPostCreated }: CreatePostProps) {
         if (!files) return;
 
         Array.from(files).forEach(file => {
+            // Check file size (max 50MB)
+            if (file.size > 50 * 1024 * 1024) {
+                alert(`File ${file.name} is too large. Maximum size is 50MB.`);
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = () => {
                 const type = file.type.startsWith("video/") ? "video" : "image";
-                setMediaFiles(prev => [...prev, { url: reader.result as string, type }]);
+                setMediaFiles(prev => [...prev, {
+                    file,
+                    preview: reader.result as string,
+                    type
+                }]);
             };
             reader.readAsDataURL(file);
         });
+
+        // Reset input
+        e.target.value = "";
     };
 
     const removeMedia = (index: number) => {
@@ -38,19 +59,39 @@ export function CreatePost({ userAvatar, onPostCreated }: CreatePostProps) {
         if (!content.trim() && mediaFiles.length === 0) return;
 
         setIsSubmitting(true);
+        setUploadProgress("Preparing...");
+
         try {
-            await createPost(
-                content,
-                mediaFiles.map(m => m.url),
-                mediaFiles.map(m => m.type)
-            );
+            // Upload all media files to Supabase Storage
+            const uploadedUrls: string[] = [];
+            const mediaTypes: string[] = [];
+
+            for (let i = 0; i < mediaFiles.length; i++) {
+                setUploadProgress(`Uploading ${i + 1}/${mediaFiles.length}...`);
+
+                const formData = new FormData();
+                formData.append("file", mediaFiles[i].file);
+
+                const result = await uploadFile(formData, "post-media");
+                uploadedUrls.push(result.url);
+                mediaTypes.push(mediaFiles[i].type);
+            }
+
+            // Create post with uploaded URLs
+            setUploadProgress("Creating post...");
+            await createPost(content, uploadedUrls, mediaTypes);
+
+            // Reset form
             setContent("");
             setMediaFiles([]);
+            setUploadProgress("");
             onPostCreated?.();
         } catch (error) {
             console.error("Failed to create post:", error);
+            alert("Failed to create post. Please try again.");
         } finally {
             setIsSubmitting(false);
+            setUploadProgress("");
         }
     };
 
@@ -86,13 +127,14 @@ export function CreatePost({ userAvatar, onPostCreated }: CreatePostProps) {
                                 {mediaFiles.map((media, i) => (
                                     <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-midnight-900">
                                         {media.type === "video" ? (
-                                            <video src={media.url} className="w-full h-full object-cover" />
+                                            <video src={media.preview} className="w-full h-full object-cover" />
                                         ) : (
-                                            <img src={media.url} alt="" className="w-full h-full object-cover" />
+                                            <img src={media.preview} alt="" className="w-full h-full object-cover" />
                                         )}
                                         <button
                                             onClick={() => removeMedia(i)}
-                                            className="absolute top-2 right-2 w-6 h-6 bg-black/70 rounded-full flex items-center justify-center hover:bg-black"
+                                            disabled={isSubmitting}
+                                            className="absolute top-2 right-2 w-6 h-6 bg-black/70 rounded-full flex items-center justify-center hover:bg-black disabled:opacity-50"
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -101,6 +143,13 @@ export function CreatePost({ userAvatar, onPostCreated }: CreatePostProps) {
                             </motion.div>
                         )}
                     </AnimatePresence>
+
+                    {/* Upload Progress */}
+                    {uploadProgress && (
+                        <div className="mt-3 text-sm text-electric-blue">
+                            {uploadProgress}
+                        </div>
+                    )}
 
                     {/* Actions */}
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
@@ -115,16 +164,25 @@ export function CreatePost({ userAvatar, onPostCreated }: CreatePostProps) {
                             />
                             <button
                                 onClick={() => fileInputRef.current?.click()}
-                                className="p-2 hover:bg-white/5 rounded-lg transition-colors text-gray-400 hover:text-electric-blue"
+                                disabled={isSubmitting || mediaFiles.length >= 4}
+                                className="p-2 hover:bg-white/5 rounded-lg transition-colors text-gray-400 hover:text-electric-blue disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Add image"
                             >
                                 <Image className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => fileInputRef.current?.click()}
-                                className="p-2 hover:bg-white/5 rounded-lg transition-colors text-gray-400 hover:text-grid-cyan"
+                                disabled={isSubmitting || mediaFiles.length >= 4}
+                                className="p-2 hover:bg-white/5 rounded-lg transition-colors text-gray-400 hover:text-grid-cyan disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Add video"
                             >
                                 <Video className="w-5 h-5" />
                             </button>
+                            {mediaFiles.length > 0 && (
+                                <span className="text-xs text-gray-500 ml-2">
+                                    {mediaFiles.length}/4 files
+                                </span>
+                            )}
                         </div>
 
                         <button
@@ -133,7 +191,10 @@ export function CreatePost({ userAvatar, onPostCreated }: CreatePostProps) {
                             className="px-4 py-2 bg-electric-blue hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-full transition-colors flex items-center gap-2"
                         >
                             {isSubmitting ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    {uploadProgress || "Posting..."}
+                                </>
                             ) : (
                                 <>
                                     <Send className="w-4 h-4" />
