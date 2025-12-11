@@ -43,7 +43,9 @@ export default async function CalendarPage() {
             date: t.start_date,
             status: t.status,
             link: `/dashboard/tournaments/${t.id}`,
-            color: "bg-electric-blue"
+            color: "bg-electric-blue",
+            location: undefined as string | undefined,
+            description: undefined as string | undefined
         })) || []),
         ...(matches?.map(m => ({
             id: `m-${m.id}`,
@@ -52,7 +54,9 @@ export default async function CalendarPage() {
             date: m.scheduled_time,
             status: m.status,
             link: `/matches/${m.id}`,
-            color: "bg-red-500"
+            color: "bg-red-500",
+            location: undefined as string | undefined,
+            description: undefined as string | undefined
         })) || []),
         ...(customEvents?.map(e => ({
             id: `e-${e.id}`,
