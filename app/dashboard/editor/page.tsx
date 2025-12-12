@@ -1,5 +1,5 @@
-import { VideoEditor } from "@/components/editor/VideoEditor";
+import { AdvancedVideoEditor } from "@/components/editor/AdvancedVideoEditor";
 
 export default function EditorPage() {
-    return <VideoEditor />;
+    return <AdvancedVideoEditor />;
 }
