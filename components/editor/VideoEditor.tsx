@@ -157,7 +157,7 @@ export function VideoEditor() {
 
             // Read output file
             const data = await ffmpeg.readFile("output.mp4");
-            const blob = new Blob([data.buffer], { type: "video/mp4" });
+            const blob = new Blob([data as Uint8Array], { type: "video/mp4" });
             const url = URL.createObjectURL(blob);
 
             // Update clip with trimmed version
@@ -213,7 +213,7 @@ export function VideoEditor() {
 
             // Read output
             const data = await ffmpeg.readFile("merged.mp4");
-            const blob = new Blob([data.buffer], { type: "video/mp4" });
+            const blob = new Blob([data as Uint8Array], { type: "video/mp4" });
             const url = URL.createObjectURL(blob);
 
             // Create merged clip
@@ -324,7 +324,7 @@ export function VideoEditor() {
 
             // Read output
             const data = await ffmpeg.readFile("output_effects.mp4");
-            const blob = new Blob([data.buffer], { type: "video/mp4" });
+            const blob = new Blob([data as Uint8Array], { type: "video/mp4" });
             const url = URL.createObjectURL(blob);
 
             // Create new clip with effects
