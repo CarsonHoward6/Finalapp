@@ -22,6 +22,7 @@ export function CreatePost({ userAvatar, onPostCreated }: CreatePostProps) {
     const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadProgress, setUploadProgress] = useState("");
+    const [error, setError] = useState<string>("");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,6 +61,7 @@ export function CreatePost({ userAvatar, onPostCreated }: CreatePostProps) {
 
         setIsSubmitting(true);
         setUploadProgress("Preparing...");
+        setError("");
 
         try {
             // Upload all media files to Supabase Storage
@@ -69,26 +71,60 @@ export function CreatePost({ userAvatar, onPostCreated }: CreatePostProps) {
             for (let i = 0; i < mediaFiles.length; i++) {
                 setUploadProgress(`Uploading ${i + 1}/${mediaFiles.length}...`);
 
-                const formData = new FormData();
-                formData.append("file", mediaFiles[i].file);
+                try {
+                    const formData = new FormData();
+                    formData.append("file", mediaFiles[i].file);
 
-                const result = await uploadFile(formData, "post-media");
-                uploadedUrls.push(result.url);
-                mediaTypes.push(mediaFiles[i].type);
+                    const result = await uploadFile(formData, "post-media");
+
+                    if (!result.url) {
+                        throw new Error(`Failed to upload ${mediaFiles[i].file.name}`);
+                    }
+
+                    uploadedUrls.push(result.url);
+                    mediaTypes.push(mediaFiles[i].type);
+                } catch (uploadError: any) {
+                    console.error("Upload error:", uploadError);
+
+                    // Specific error messages for common issues
+                    if (uploadError.message?.includes("bucket")) {
+                        throw new Error("Storage not configured. Please contact support or check STORAGE_SETUP.md");
+                    } else if (uploadError.message?.includes("size")) {
+                        throw new Error(`File ${mediaFiles[i].file.name} is too large. Max 50MB per file.`);
+                    } else {
+                        throw new Error(`Failed to upload ${mediaFiles[i].file.name}. Please try again.`);
+                    }
+                }
             }
 
             // Create post with uploaded URLs
             setUploadProgress("Creating post...");
-            await createPost(content, uploadedUrls, mediaTypes);
+
+            try {
+                await createPost(content, uploadedUrls, mediaTypes);
+            } catch (postError: any) {
+                console.error("Create post error:", postError);
+
+                // Specific error messages for database issues
+                if (postError.message?.includes("RLS") || postError.message?.includes("permission")) {
+                    throw new Error("Permission denied. Please make sure you're logged in.");
+                } else if (postError.message?.includes("column")) {
+                    throw new Error("Database error. Please contact support.");
+                } else {
+                    throw new Error("Failed to create post. Please try again.");
+                }
+            }
 
             // Reset form
             setContent("");
             setMediaFiles([]);
             setUploadProgress("");
+            setError("");
             onPostCreated?.();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to create post:", error);
-            alert("Failed to create post. Please try again.");
+            const errorMessage = error.message || "Failed to create post. Please try again.";
+            setError(errorMessage);
         } finally {
             setIsSubmitting(false);
             setUploadProgress("");
@@ -114,6 +150,24 @@ export function CreatePost({ userAvatar, onPostCreated }: CreatePostProps) {
                         className="w-full bg-transparent text-white placeholder-gray-500 resize-none focus:outline-none min-h-[80px]"
                         rows={3}
                     />
+
+                    {/* Error Message */}
+                    {error && (
+                        <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                            <div className="flex items-start gap-2">
+                                <div className="text-red-500 text-sm mt-0.5">⚠️</div>
+                                <div className="flex-1">
+                                    <p className="text-red-500 text-sm">{error}</p>
+                                    <button
+                                        onClick={() => setError("")}
+                                        className="text-xs text-red-400 hover:text-red-300 mt-1"
+                                    >
+                                        Dismiss
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Media Preview */}
                     <AnimatePresence>

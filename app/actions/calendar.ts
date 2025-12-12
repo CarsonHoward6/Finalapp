@@ -57,7 +57,10 @@ export async function getCalendarEvents(month?: number, year?: number) {
 
     let query = supabase
         .from("calendar_events")
-        .select("*")
+        .select(`
+            *,
+            creator:profiles!calendar_events_user_id_fkey(id, username, full_name, avatar_url)
+        `)
         .eq("user_id", user.id)
         .order("start_date", { ascending: true });
 

@@ -69,7 +69,8 @@ export default async function CalendarPage() {
                    e.event_type === "meeting" ? "bg-purple-500" :
                    e.event_type === "personal" ? "bg-blue-500" : "bg-gray-500",
             location: e.location,
-            description: e.description
+            description: e.description,
+            creator: (e as any).creator
         })) || [])
     ].sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime());
 
@@ -96,6 +97,24 @@ export default async function CalendarPage() {
                                     className={`flex items-center gap-4 p-4 bg-midnight-900 rounded-lg border border-white/5 ${event.link ? 'hover:border-grid-cyan/50 cursor-pointer' : ''} transition-all`}
                                 >
                                     <div className={`w-2 h-full min-h-[40px] rounded-full ${event.color || 'bg-gray-500'}`} />
+
+                                    {/* Creator Avatar (for custom events) */}
+                                    {(event as any).creator && (
+                                        <div className="w-10 h-10 rounded-full overflow-hidden bg-midnight-700 flex-shrink-0">
+                                            {(event as any).creator.avatar_url ? (
+                                                <img
+                                                    src={(event as any).creator.avatar_url}
+                                                    alt={(event as any).creator.username}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full bg-gradient-to-br from-electric-blue to-grid-cyan flex items-center justify-center text-sm font-bold">
+                                                    {((event as any).creator.username?.[0] || "?").toUpperCase()}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
                                     <div className="flex-1">
                                         <p className="font-medium text-white">{event.title}</p>
                                         {event.description && (

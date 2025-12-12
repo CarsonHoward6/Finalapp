@@ -9,9 +9,9 @@ export async function createPost(content: string, mediaUrls: string[] = [], medi
     if (!supabase) throw new Error("Database not configured");
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Unauthorized");
+    if (!user) throw new Error("Unauthorized - Please log in");
 
-    const { data, error } = await supabase
+    const { data, error} = await supabase
         .from("posts")
         .insert({
             user_id: user.id,
@@ -23,8 +23,26 @@ export async function createPost(content: string, mediaUrls: string[] = [], medi
         .single();
 
     if (error) {
-        console.error("Create post error:", error);
-        throw new Error("Failed to create post");
+        console.error("Create post error - Full details:", {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+        });
+
+        // Provide specific error messages based on error type
+        if (error.code === "42703") {
+            // Column doesn't exist
+            throw new Error("Database schema error - media columns missing. Contact support.");
+        } else if (error.code === "42501") {
+            // RLS policy violation
+            throw new Error("Permission denied - RLS policy blocks insert. Check database permissions.");
+        } else if (error.message?.includes("violates")) {
+            // Constraint violation
+            throw new Error("Data validation error - " + error.message);
+        } else {
+            throw new Error("Failed to create post - " + (error.message || "Unknown error"));
+        }
     }
 
     revalidatePath("/feed");

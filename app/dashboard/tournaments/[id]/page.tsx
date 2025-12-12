@@ -19,10 +19,18 @@ export default async function TournamentDashboardPage({ params }: { params: Prom
         notFound();
     }
 
-    // Fetch participants (placeholder for now until we have logic)
+    // Fetch participants with team and member information
     const { data: participants } = await supabase
         .from("tournament_participants")
-        .select("*, participant:teams(*)") // Assumes team participants for now
+        .select(`
+            *,
+            participant:teams(
+                *,
+                members:team_members(
+                    user:profiles(id, username, full_name, avatar_url)
+                )
+            )
+        `) // Fetch team with members and their profiles
         .eq("tournament_id", id);
 
     // Fetch matches if tournament is ongoing
@@ -123,14 +131,51 @@ export default async function TournamentDashboardPage({ params }: { params: Prom
                         </div>
 
                         <div className="space-y-3">
-                            {participants?.map((p: any) => (
-                                <div key={p.id} className="flex items-center gap-3 p-3 bg-midnight-900 rounded-lg border border-white/5">
-                                    <div className="w-8 h-8 rounded bg-midnight-800 flex items-center justify-center font-bold text-xs text-gray-500">
-                                        {p.seed || "-"}
+                            {participants?.map((p: any) => {
+                                const team = p.participant;
+                                const teamMembers = team?.members || [];
+                                const displayMembers = teamMembers.slice(0, 3); // Show first 3 members
+
+                                return (
+                                    <div key={p.id} className="flex items-center gap-3 p-3 bg-midnight-900 rounded-lg border border-white/5">
+                                        <div className="w-8 h-8 rounded bg-midnight-800 flex items-center justify-center font-bold text-xs text-gray-500">
+                                            {p.seed || "-"}
+                                        </div>
+
+                                        {/* Team member avatars */}
+                                        {displayMembers.length > 0 && (
+                                            <div className="flex -space-x-2">
+                                                {displayMembers.map((member: any, idx: number) => (
+                                                    <div
+                                                        key={member.user?.id || idx}
+                                                        className="w-8 h-8 rounded-full border-2 border-midnight-900 overflow-hidden bg-midnight-700"
+                                                        title={member.user?.full_name || member.user?.username}
+                                                    >
+                                                        {member.user?.avatar_url ? (
+                                                            <img
+                                                                src={member.user.avatar_url}
+                                                                alt={member.user.username}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full bg-gradient-to-br from-electric-blue to-grid-cyan flex items-center justify-center text-xs font-bold">
+                                                                {(member.user?.username?.[0] || "?").toUpperCase()}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                {teamMembers.length > 3 && (
+                                                    <div className="w-8 h-8 rounded-full border-2 border-midnight-900 bg-midnight-700 flex items-center justify-center text-xs text-gray-400">
+                                                        +{teamMembers.length - 3}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        <div className="flex-1 font-medium text-white">{team?.name || "Unknown Team"}</div>
                                     </div>
-                                    <div className="font-medium text-white">{p.participant?.name || "Unknown Team"}</div>
-                                </div>
-                            ))}
+                                );
+                            })}
 
                             {(!participants || participants.length === 0) && (
                                 <p className="text-gray-500 text-sm text-center py-4">No teams registered yet.</p>

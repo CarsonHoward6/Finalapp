@@ -18,8 +18,12 @@ export function AISupportChat() {
     ]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [lastRequestTime, setLastRequestTime] = useState<number>(0);
+    const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+    const [rateLimitError, setRateLimitError] = useState<string>("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const COOLDOWN_SECONDS = 3;
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -35,15 +39,42 @@ export function AISupportChat() {
         }
     }, [isOpen]);
 
+    // Cooldown timer effect
+    useEffect(() => {
+        if (cooldownRemaining > 0) {
+            const timer = setTimeout(() => {
+                setCooldownRemaining(cooldownRemaining - 1);
+            }, 1000);
+            return () => clearTimeout(timer);
+        } else if (rateLimitError) {
+            setRateLimitError("");
+        }
+    }, [cooldownRemaining, rateLimitError]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!input.trim() || isLoading) return;
 
+        // Check rate limit
+        const now = Date.now();
+        const timeSinceLastRequest = (now - lastRequestTime) / 1000;
+
+        if (timeSinceLastRequest < COOLDOWN_SECONDS && lastRequestTime > 0) {
+            const remainingTime = Math.ceil(COOLDOWN_SECONDS - timeSinceLastRequest);
+            setCooldownRemaining(remainingTime);
+            setRateLimitError(`Please wait ${remainingTime} second${remainingTime > 1 ? 's' : ''} before sending another message.`);
+            return;
+        }
+
         const userMessage: Message = { role: "user", content: input.trim() };
         setMessages((prev) => [...prev, userMessage]);
         setInput("");
         setIsLoading(true);
+        setRateLimitError("");
+
+        // Update last request time
+        setLastRequestTime(Date.now());
 
         try {
             const response = await fetch("/api/chat", {
@@ -61,6 +92,17 @@ export function AISupportChat() {
 
             if (data.role && data.content) {
                 setMessages((prev) => [...prev, data as Message]);
+            } else if (response.status === 429) {
+                // OpenAI rate limit hit
+                setCooldownRemaining(COOLDOWN_SECONDS);
+                setRateLimitError("Rate limit reached. Please wait a moment before trying again.");
+                setMessages((prev) => [
+                    ...prev,
+                    {
+                        role: "assistant",
+                        content: "I'm getting too many requests right now. Please wait a moment and try again. ⏳"
+                    }
+                ]);
             } else {
                 throw new Error("Invalid response format");
             }
@@ -70,7 +112,7 @@ export function AISupportChat() {
                 ...prev,
                 {
                     role: "assistant",
-                    content: "Sorry, I'm having trouble connecting right now. Please try again later."
+                    content: "Sorry, I'm having trouble connecting right now. Please try again in a few moments."
                 }
             ]);
         } finally {
@@ -173,6 +215,21 @@ export function AISupportChat() {
 
                     {/* Input */}
                     <div className="p-4 bg-midnight-800 border-t border-white/10">
+                        {/* Rate Limit Warning */}
+                        {rateLimitError && (
+                            <div className="mb-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-2">
+                                <div className="text-yellow-500 text-xs mt-0.5">⏳</div>
+                                <div className="flex-1">
+                                    <p className="text-yellow-500 text-xs">{rateLimitError}</p>
+                                    {cooldownRemaining > 0 && (
+                                        <p className="text-yellow-400 text-xs mt-1 font-semibold">
+                                            {cooldownRemaining}s remaining
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         <div className="flex gap-2 mb-2">
                             <button
                                 onClick={handleClearChat}
@@ -187,16 +244,21 @@ export function AISupportChat() {
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder="Ask about ProGrid..."
+                                placeholder={cooldownRemaining > 0 ? `Wait ${cooldownRemaining}s...` : "Ask about ProGrid..."}
                                 className="flex-1 px-4 py-2 bg-midnight-900 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-electric-blue/50 focus:ring-1 focus:ring-electric-blue/50 transition-all text-sm"
-                                disabled={isLoading}
+                                disabled={isLoading || cooldownRemaining > 0}
                             />
                             <button
                                 type="submit"
-                                disabled={isLoading || !input.trim()}
+                                disabled={isLoading || !input.trim() || cooldownRemaining > 0}
                                 className="px-4 py-2 bg-electric-blue text-white rounded-lg hover:bg-electric-blue/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                title={cooldownRemaining > 0 ? `Wait ${cooldownRemaining}s before sending` : undefined}
                             >
-                                <Send className="w-4 h-4" />
+                                {cooldownRemaining > 0 ? (
+                                    <span className="text-sm">{cooldownRemaining}s</span>
+                                ) : (
+                                    <Send className="w-4 h-4" />
+                                )}
                             </button>
                         </form>
                     </div>
