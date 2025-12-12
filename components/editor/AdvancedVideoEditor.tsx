@@ -272,8 +272,10 @@ export function AdvancedVideoEditor() {
             ]);
 
             const data = await ffmpeg.readFile("output.mp4");
-            const uint8Data = typeof data === 'string' ? new TextEncoder().encode(data) : data;
-            const blob = new Blob([uint8Data], { type: "video/mp4" });
+            const blob = new Blob(
+                [typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(Array.from(data))],
+                { type: "video/mp4" }
+            );
             const url = URL.createObjectURL(blob);
 
             const trimmedFile = new File([blob], `trimmed_${clip.name}`, { type: "video/mp4" });
@@ -326,8 +328,10 @@ export function AdvancedVideoEditor() {
             ]);
 
             const data = await ffmpeg.readFile("merged.mp4");
-            const uint8Data = typeof data === 'string' ? new TextEncoder().encode(data) : data;
-            const blob = new Blob([uint8Data], { type: "video/mp4" });
+            const blob = new Blob(
+                [typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(Array.from(data))],
+                { type: "video/mp4" }
+            );
             const url = URL.createObjectURL(blob);
 
             const totalDuration = clips.reduce((sum, c) => sum + (c.endTime - c.startTime), 0);
@@ -456,8 +460,10 @@ export function AdvancedVideoEditor() {
             }
 
             const data = await ffmpeg.readFile("output_effects.mp4");
-            const uint8Data = typeof data === 'string' ? new TextEncoder().encode(data) : data;
-            const blob = new Blob([uint8Data], { type: "video/mp4" });
+            const blob = new Blob(
+                [typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(Array.from(data))],
+                { type: "video/mp4" }
+            );
             const url = URL.createObjectURL(blob);
 
             const newFile = new File([blob], `effects_${clip.name}`, { type: "video/mp4" });

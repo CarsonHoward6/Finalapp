@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/ui/branding/Logo";
 import { Mail, Lock, User, Loader2, Check, UserPlus, Chrome } from "lucide-react";
 
-export default function SignupPage() {
+function SignupForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -329,5 +329,17 @@ export default function SignupPage() {
                 </p>
             </div>
         </div>
+    );
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-midnight-900">
+                <Loader2 className="w-8 h-8 text-electric-blue animate-spin" />
+            </div>
+        }>
+            <SignupForm />
+        </Suspense>
     );
 }
