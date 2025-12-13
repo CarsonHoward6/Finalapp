@@ -34,6 +34,12 @@ export default function SignupPage() {
 
         setIsLoading(true);
 
+        if (!supabase.auth) {
+            setError("Authentication service not available");
+            setIsLoading(false);
+            return;
+        }
+
         const { data, error: signUpError } = await supabase.auth.signUp({
             email,
             password,

@@ -20,6 +20,12 @@ export default function LoginPage() {
         setIsLoading(true);
         setError("");
 
+        if (!supabase.auth) {
+            setError("Authentication service not available");
+            setIsLoading(false);
+            return;
+        }
+
         const { error } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -35,6 +41,11 @@ export default function LoginPage() {
     };
 
     const handleGoogleLogin = async () => {
+        if (!supabase.auth) {
+            setError("Authentication service not available");
+            return;
+        }
+
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
@@ -45,6 +56,11 @@ export default function LoginPage() {
     };
 
     const handleDiscordLogin = async () => {
+        if (!supabase.auth) {
+            setError("Authentication service not available");
+            return;
+        }
+
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "discord",
             options: {
