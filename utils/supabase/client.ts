@@ -16,7 +16,18 @@ function createMockClient(): Partial<SupabaseClient> {
         signInWithOAuth: async () => ({ error: { message: 'Supabase not configured' } }),
         signOut: async () => ({ error: null }),
     };
-    return { auth: mockAuth as any, from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }) }) }) }) as any };
+
+    const mockChannel = {
+        on: () => mockChannel,
+        subscribe: () => ({ unsubscribe: async () => {} }),
+    };
+
+    return {
+        auth: mockAuth as any,
+        from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }) }) }) }) as any,
+        channel: () => mockChannel as any,
+        removeChannel: () => {}
+    };
 }
 
 export function createClient() {
