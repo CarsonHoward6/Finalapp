@@ -7,18 +7,18 @@ import { Sidebar } from "@/components/layout/Sidebar";
 
 type Post = {
     id: string;
-    user_id: string;
-    content: string | null;
-    media_urls: string[] | null;
-    media_types: string[] | null;
+    content: string;
+    media_urls: string[];
+    media_types: string[];
     created_at: string;
-    profiles: {
+    author: {
+        id: string;
         username: string;
         full_name: string | null;
         avatar_url: string | null;
     };
-    likes_count: number;
-    comments_count: number;
+    likes_count: { count: number }[];
+    comments_count: { count: number }[];
 };
 
 export default async function FeedPage() {
