@@ -3,6 +3,7 @@ import { DashboardContent } from "@/components/layout/DashboardContent";
 import { AISupportChat } from "@/components/layout/AISupportChat";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { checkIsProUser, checkIsOwner } from "@/app/actions/subscriptions";
 
 export default async function DashboardLayout({
     children,
@@ -35,13 +36,18 @@ export default async function DashboardLayout({
         redirect("/onboarding");
     }
 
+    // Check if user has Pro access or is owner
+    const isProUser = await checkIsProUser();
+    const isOwner = await checkIsOwner();
+    const hasAIAccess = isProUser || isOwner;
+
     return (
         <div className="flex min-h-screen bg-midnight-900 text-foreground">
             <Sidebar />
             <DashboardContent>
                 {children}
             </DashboardContent>
-            <AISupportChat />
+            <AISupportChat isProUser={hasAIAccess} />
         </div>
     );
 }

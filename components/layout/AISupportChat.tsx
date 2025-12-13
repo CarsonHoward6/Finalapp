@@ -1,15 +1,22 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Bot, User as UserIcon } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User as UserIcon, Crown, Lock } from "lucide-react";
+import { createSubscriptionCheckout } from "@/app/actions/subscriptions";
 
 type Message = {
     role: "user" | "assistant";
     content: string;
 };
 
-export function AISupportChat() {
+interface AISupportChatProps {
+    isProUser: boolean;
+}
+
+export function AISupportChat({ isProUser }: AISupportChatProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [isUpgrading, setIsUpgrading] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         {
             role: "assistant",
@@ -129,17 +136,52 @@ export function AISupportChat() {
         ]);
     };
 
+    const handleUpgrade = async () => {
+        setIsUpgrading(true);
+
+        try {
+            const { url } = await createSubscriptionCheckout();
+            if (url) {
+                window.location.href = url;
+            }
+        } catch (error) {
+            console.error("Upgrade error:", error);
+            setIsUpgrading(false);
+        }
+    };
+
+    const handleButtonClick = () => {
+        if (isProUser) {
+            setIsOpen(true);
+        } else {
+            setShowUpgradeModal(true);
+        }
+    };
+
     return (
         <>
             {/* Chat Widget Button */}
             {!isOpen && (
-                <button
-                    onClick={() => setIsOpen(true)}
-                    className="fixed bottom-24 left-6 z-50 w-14 h-14 bg-gradient-to-br from-electric-blue to-grid-cyan hover:from-electric-blue/80 hover:to-grid-cyan/80 text-white rounded-full shadow-[0_0_30px_rgba(0,229,255,0.3)] hover:shadow-[0_0_40px_rgba(0,229,255,0.5)] flex items-center justify-center transition-all duration-300 hover:scale-110 group"
-                    title="AI Support Chat"
-                >
-                    <MessageCircle className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                </button>
+                <div className="fixed bottom-24 left-6 z-50">
+                    <button
+                        onClick={handleButtonClick}
+                        className={`relative w-14 h-14 ${
+                            isProUser
+                                ? "bg-gradient-to-br from-electric-blue to-grid-cyan hover:from-electric-blue/80 hover:to-grid-cyan/80 shadow-[0_0_30px_rgba(0,229,255,0.3)] hover:shadow-[0_0_40px_rgba(0,229,255,0.5)]"
+                                : "bg-midnight-700 hover:bg-midnight-600 border-2 border-electric-blue/30 shadow-[0_0_20px_rgba(0,229,255,0.15)]"
+                        } text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group`}
+                        title={isProUser ? "AI Support Chat" : "AI Support - Pro Feature"}
+                    >
+                        {isProUser ? (
+                            <MessageCircle className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                        ) : (
+                            <>
+                                <Lock className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+                                <Crown className="w-3 h-3 text-yellow-500 absolute -top-1 -right-1" />
+                            </>
+                        )}
+                    </button>
+                </div>
             )}
 
             {/* Chat Window */}
@@ -261,6 +303,79 @@ export function AISupportChat() {
                                 )}
                             </button>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Upgrade Modal */}
+            {showUpgradeModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                    <div className="bg-midnight-800 border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+                        <div className="flex items-start justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-electric-blue to-purple-600 flex items-center justify-center">
+                                    <Bot className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-white">Upgrade to Pro</h3>
+                                    <p className="text-sm text-gray-400">Unlock AI Support Assistant</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowUpgradeModal(false)}
+                                className="text-gray-400 hover:text-white transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <p className="text-gray-300 mb-6">
+                            Get instant help with tournaments, teams, video editing, and more from our AI assistant. Available 24/7 for Pro members.
+                        </p>
+
+                        <div className="bg-midnight-900 border border-white/5 rounded-xl p-4 mb-6">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-white font-semibold">ProGrid Pro</span>
+                                <div className="text-right">
+                                    <div className="text-2xl font-bold text-white">$5</div>
+                                    <div className="text-xs text-gray-500">per month</div>
+                                </div>
+                            </div>
+                            <ul className="space-y-2 text-sm text-gray-400">
+                                <li className="flex items-center gap-2">
+                                    <div className="w-1 h-1 rounded-full bg-electric-blue"></div>
+                                    AI Support Assistant
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <div className="w-1 h-1 rounded-full bg-electric-blue"></div>
+                                    Advanced Analytics
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <div className="w-1 h-1 rounded-full bg-electric-blue"></div>
+                                    Custom Profile Themes
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <div className="w-1 h-1 rounded-full bg-electric-blue"></div>
+                                    Priority Tournament Entry
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleUpgrade}
+                                disabled={isUpgrading}
+                                className="flex-1 px-6 py-3 bg-gradient-to-r from-electric-blue to-purple-600 hover:from-electric-blue/80 hover:to-purple-600/80 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isUpgrading ? "Processing..." : "Upgrade Now"}
+                            </button>
+                            <button
+                                onClick={() => setShowUpgradeModal(false)}
+                                className="px-6 py-3 bg-midnight-700 hover:bg-midnight-600 border border-white/10 text-white font-medium rounded-xl transition-all"
+                            >
+                                Maybe Later
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
