@@ -18,7 +18,8 @@ import {
     ChevronLeft,
     ChevronRight,
     UserPlus,
-    Film
+    Film,
+    CreditCard
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useState, useEffect } from "react";
@@ -35,6 +36,7 @@ const navItems = [
     { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
     { name: "Video Editor", href: "/dashboard/editor", icon: Film },
     { name: "Matches", href: "/dashboard/matches", icon: Swords },
+    { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
