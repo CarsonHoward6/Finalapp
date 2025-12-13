@@ -6,13 +6,13 @@ import Link from "next/link";
 type Profile = {
     id: string;
     username: string;
-    full_name: string | null;
-    avatar_url: string | null;
-    stream_url: string | null;
+    full_name?: string;
+    avatar_url?: string;
+    stream_url: string;
     is_live: boolean;
-    live_started_at: string | null;
-    role: string | null;
-    interests: string[] | null;
+    live_started_at?: string;
+    role?: string;
+    interests?: string[];
     stats?: Record<string, unknown>;
 };
 
