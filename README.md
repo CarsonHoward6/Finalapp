@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ProGrid - Competitive Esports Platform
 
 ProGrid is a Next.js-based competitive platform for organizing tournaments, managing teams, and tracking match results in real-time.
@@ -56,3 +57,7 @@ ProGrid is a Next.js-based competitive platform for organizing tournaments, mana
 
 ## License
 Private / Proprietary.
+=======
+# Finalapp
+This is for my Final in programming languages
+>>>>>>> d17362ea3b2eae3e57e91a48b870e771503fae0c
