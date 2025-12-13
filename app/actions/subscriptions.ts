@@ -43,23 +43,37 @@ export async function checkIsProUser(): Promise<boolean> {
     if (!user) return false;
 
     // Check if owner first (carsonhoward6@gmail.com always has pro access)
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_owner, subscription_tier")
-        .eq("id", user.id)
-        .single();
+    if (user.email === "carsonhoward6@gmail.com") return true;
 
-    if (profile?.is_owner) return true;
-    if (profile?.subscription_tier === "pro") return true;
+    // Check profile subscription tier (if column exists)
+    try {
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("is_owner, subscription_tier")
+            .eq("id", user.id)
+            .single();
 
-    // Double check subscription table
-    const { data: subscription } = await supabase
-        .from("subscriptions")
-        .select("plan, status")
-        .eq("user_id", user.id)
-        .single();
+        if (profile?.is_owner) return true;
+        if (profile?.subscription_tier === "pro") return true;
+    } catch (error) {
+        // Columns might not exist yet - that's okay
+        console.log("Profile subscription check skipped");
+    }
 
-    return subscription?.plan === "pro" && subscription?.status === "active";
+    // Check subscription table
+    try {
+        const { data: subscription } = await supabase
+            .from("subscriptions")
+            .select("plan, status")
+            .eq("user_id", user.id)
+            .single();
+
+        return subscription?.plan === "pro" && subscription?.status === "active";
+    } catch (error) {
+        // Table might not exist yet - that's okay
+        console.log("Subscription check skipped");
+        return false;
+    }
 }
 
 export async function checkIsOwner(): Promise<boolean> {
@@ -69,13 +83,23 @@ export async function checkIsOwner(): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_owner, email")
-        .eq("id", user.id)
-        .single();
+    // Check email from auth.users (email is not in profiles table)
+    if (user.email === "carsonhoward6@gmail.com") return true;
 
-    return profile?.is_owner === true || profile?.email === "carsonhoward6@gmail.com";
+    // Check is_owner flag in profiles table (if column exists)
+    try {
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("is_owner")
+            .eq("id", user.id)
+            .single();
+
+        return profile?.is_owner === true;
+    } catch (error) {
+        // Column might not exist yet - that's okay
+        console.log("Owner check skipped (is_owner column not found)");
+        return false;
+    }
 }
 
 // ============================================
@@ -95,19 +119,13 @@ export async function createSubscriptionCheckout() {
         throw new Error("You already have a Pro subscription");
     }
 
-    // Get user email
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("id", user.id)
-        .single();
-
-    if (!profile?.email) throw new Error("User email not found");
+    // Get user email from auth.users (email is not in profiles table)
+    if (!user.email) throw new Error("User email not found");
 
     // Create checkout session
     const session = await createCheckoutSession(
         user.id,
-        profile.email,
+        user.email,
         STRIPE_CONFIG.PRO_MONTHLY_PRICE_ID
     );
 
@@ -261,13 +279,8 @@ export async function createConnectAccountOnboarding() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Unauthorized");
 
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("id", user.id)
-        .single();
-
-    if (!profile?.email) throw new Error("User email not found");
+    // Get user email from auth.users (email is not in profiles table)
+    if (!user.email) throw new Error("User email not found");
 
     // Check if account already exists
     const { data: existing } = await supabase
@@ -283,7 +296,7 @@ export async function createConnectAccountOnboarding() {
     } else {
         // Create new account
         const { createConnectAccount } = await import("@/lib/stripe");
-        accountId = await createConnectAccount(user.id, profile.email);
+        accountId = await createConnectAccount(user.id, user.email);
     }
 
     // Create account link for onboarding

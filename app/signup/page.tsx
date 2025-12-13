@@ -191,11 +191,14 @@ function SignupForm() {
                         )}
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-400">Username</label>
+                            <label htmlFor="username" className="text-sm font-medium text-gray-400">Username</label>
                             <div className="relative">
                                 <User className="w-5 h-5 absolute left-3 top-3 text-gray-500" />
                                 <input
                                     type="text"
+                                    id="username"
+                                    name="username"
+                                    autoComplete="username"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     placeholder="pro_player"
@@ -206,11 +209,14 @@ function SignupForm() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-400">Email</label>
+                            <label htmlFor="email" className="text-sm font-medium text-gray-400">Email</label>
                             <div className="relative">
                                 <Mail className="w-5 h-5 absolute left-3 top-3 text-gray-500" />
                                 <input
                                     type="email"
+                                    id="email"
+                                    name="email"
+                                    autoComplete="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="player@example.com"
@@ -221,11 +227,14 @@ function SignupForm() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-400">Password</label>
+                            <label htmlFor="password" className="text-sm font-medium text-gray-400">Password</label>
                             <div className="relative">
                                 <Lock className="w-5 h-5 absolute left-3 top-3 text-gray-500" />
                                 <input
                                     type="password"
+                                    id="password"
+                                    name="password"
+                                    autoComplete="new-password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
@@ -236,11 +245,14 @@ function SignupForm() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-400">Confirm Password</label>
+                            <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-400">Confirm Password</label>
                             <div className="relative">
                                 <Lock className="w-5 h-5 absolute left-3 top-3 text-gray-500" />
                                 <input
                                     type="password"
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    autoComplete="new-password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="••••••••"

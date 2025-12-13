@@ -33,20 +33,26 @@ export async function followUser(targetUserId: string) {
         throw new Error("Failed to follow user");
     }
 
-    // Create notification for the followed user
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("id", user.id)
-        .single();
+    // Create notification for the followed user (if notifications table exists)
+    try {
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("username")
+            .eq("id", user.id)
+            .single();
 
-    await supabase.from("notifications").insert({
-        user_id: targetUserId,
-        type: "follow",
-        message: `${profile?.username || "Someone"} started following you`,
-        data: { follower_id: user.id },
-    });
+        await supabase.from("notifications").insert({
+            user_id: targetUserId,
+            type: "follow",
+            message: `${profile?.username || "Someone"} started following you`,
+            data: { follower_id: user.id },
+        });
+    } catch (notifError) {
+        // Notifications table might not exist - that's okay
+        console.log("Notification creation skipped");
+    }
 
+    revalidatePath("/dashboard/connect");
     revalidatePath("/dashboard/profile");
     return { success: true };
 }
@@ -72,6 +78,7 @@ export async function unfollowUser(targetUserId: string) {
         throw new Error("Failed to unfollow user");
     }
 
+    revalidatePath("/dashboard/connect");
     revalidatePath("/dashboard/profile");
     return { success: true };
 }

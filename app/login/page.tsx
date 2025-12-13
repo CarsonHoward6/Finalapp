@@ -101,11 +101,14 @@ export default function LoginPage() {
                         )}
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-400">Email</label>
+                            <label htmlFor="email" className="text-sm font-medium text-gray-400">Email</label>
                             <div className="relative">
                                 <Mail className="w-5 h-5 absolute left-3 top-3 text-gray-500" />
                                 <input
                                     type="email"
+                                    id="email"
+                                    name="email"
+                                    autoComplete="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="player@example.com"
@@ -116,11 +119,14 @@ export default function LoginPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-400">Password</label>
+                            <label htmlFor="password" className="text-sm font-medium text-gray-400">Password</label>
                             <div className="relative">
                                 <Lock className="w-5 h-5 absolute left-3 top-3 text-gray-500" />
                                 <input
                                     type="password"
+                                    id="password"
+                                    name="password"
+                                    autoComplete="current-password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
