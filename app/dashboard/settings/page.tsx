@@ -3,6 +3,7 @@ import { ProfileSettingsSection } from "@/components/settings/ProfileSettingsSec
 import { AccountSettingsSection } from "@/components/settings/AccountSettingsSection";
 import { NotificationSettingsSection } from "@/components/settings/NotificationSettingsSection";
 import { PrivacySettingsSection } from "@/components/settings/PrivacySettingsSection";
+import { PayoutAccountSection } from "@/components/settings/PayoutAccountSection";
 import { DangerZoneSection } from "@/components/settings/DangerZoneSection";
 import { AvatarUploadSection } from "@/components/settings/AvatarUploadSection";
 import { getCurrentSettings } from "@/app/actions/settings";
@@ -60,6 +61,8 @@ export default async function SettingsPage() {
                 <PrivacySettingsSection
                     initialSettings={currentSettings?.privacy_settings || {}}
                 />
+
+                <PayoutAccountSection />
 
                 <DangerZoneSection />
             </div>
