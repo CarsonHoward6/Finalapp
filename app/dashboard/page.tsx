@@ -132,12 +132,16 @@ export default async function DashboardPage() {
                         <Users className="w-5 h-5 text-gray-400" /> My Teams
                     </h2>
                     <div className="space-y-3">
-                        {teams?.map((tm) => (
-                            <Link key={tm.team.id} href={`/dashboard/teams/${tm.team.slug}`} className="flex items-center gap-3 p-3 bg-midnight-900 rounded-lg border border-white/5 hover:border-grid-cyan/50 transition-all">
-                                <div className="w-8 h-8 rounded-full" style={{ backgroundColor: tm.team.primary_color || '#333' }} />
-                                <span className="font-medium text-white">{tm.team.name}</span>
-                            </Link>
-                        ))}
+                        {teams?.map((tm) => {
+                            const team = Array.isArray(tm.team) ? tm.team[0] : tm.team;
+                            if (!team) return null;
+                            return (
+                                <Link key={team.id} href={`/dashboard/teams/${team.slug}`} className="flex items-center gap-3 p-3 bg-midnight-900 rounded-lg border border-white/5 hover:border-grid-cyan/50 transition-all">
+                                    <div className="w-8 h-8 rounded-full" style={{ backgroundColor: team.primary_color || '#333' }} />
+                                    <span className="font-medium text-white">{team.name}</span>
+                                </Link>
+                            );
+                        })}
                         {(!teams || teams.length === 0) && (
                             <p className="text-gray-500 text-center py-4">No teams yet.</p>
                         )}
