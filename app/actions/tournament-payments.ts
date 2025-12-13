@@ -244,18 +244,19 @@ export async function getUserTeamsForTournament(tournamentId: string) {
     if (!user) return [];
 
     // Get teams the user is a member of
-    const { data: teams } = await supabase
+    const { data: teamMemberships } = await supabase
         .from("team_members")
-        .select(`
-            team:teams(
-                id,
-                name,
-                slug,
-                primary_color,
-                secondary_color
-            )
-        `)
+        .select("team_id")
         .eq("user_id", user.id);
+
+    if (!teamMemberships || teamMemberships.length === 0) return [];
+
+    // Get team details
+    const teamIds = teamMemberships.map(tm => tm.team_id);
+    const { data: teams } = await supabase
+        .from("teams")
+        .select("id, name, slug, primary_color, secondary_color")
+        .in("id", teamIds);
 
     if (!teams) return [];
 
@@ -267,8 +268,5 @@ export async function getUserTeamsForTournament(tournamentId: string) {
 
     const registeredTeamIds = new Set(participants?.map(p => p.team_id) || []);
 
-    return teams
-        .map(t => t.team)
-        .filter(team => team && !registeredTeamIds.has(team.id))
-        .filter((team): team is NonNullable<typeof team> => team !== null);
+    return teams.filter(team => !registeredTeamIds.has(team.id));
 }

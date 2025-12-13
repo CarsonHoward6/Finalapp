@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        switch (event.type) {
+        switch (event.type as string) {
             // ============================================
             // SUBSCRIPTION EVENTS
             // ============================================
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
                     }
 
                     // Get subscription details from Stripe
-                    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+                    const subscriptionData: any = await stripe.subscriptions.retrieve(subscriptionId);
 
                     // Update database
                     await supabase
@@ -66,9 +66,13 @@ export async function POST(req: NextRequest) {
                             stripe_subscription_id: subscriptionId,
                             status: "active",
                             plan: "pro",
-                            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-                            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                            cancel_at_period_end: false,
+                            current_period_start: subscriptionData.current_period_start
+                                ? new Date(subscriptionData.current_period_start * 1000).toISOString()
+                                : new Date().toISOString(),
+                            current_period_end: subscriptionData.current_period_end
+                                ? new Date(subscriptionData.current_period_end * 1000).toISOString()
+                                : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                            cancel_at_period_end: subscriptionData.cancel_at_period_end || false,
                         });
 
                     // Update profile subscription tier
@@ -94,7 +98,7 @@ export async function POST(req: NextRequest) {
             }
 
             case "customer.subscription.updated": {
-                const subscription = event.data.object as Stripe.Subscription;
+                const subscription: any = event.data.object;
                 const customerId = subscription.customer as string;
 
                 // Find user by customer ID
@@ -114,9 +118,13 @@ export async function POST(req: NextRequest) {
                     .from("subscriptions")
                     .update({
                         status: subscription.status,
-                        current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-                        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                        cancel_at_period_end: subscription.cancel_at_period_end,
+                        current_period_start: subscription.current_period_start
+                            ? new Date(subscription.current_period_start * 1000).toISOString()
+                            : undefined,
+                        current_period_end: subscription.current_period_end
+                            ? new Date(subscription.current_period_end * 1000).toISOString()
+                            : undefined,
+                        cancel_at_period_end: subscription.cancel_at_period_end || false,
                     })
                     .eq("user_id", subData.user_id);
 
@@ -125,7 +133,7 @@ export async function POST(req: NextRequest) {
             }
 
             case "customer.subscription.deleted": {
-                const subscription = event.data.object as Stripe.Subscription;
+                const subscription: any = event.data.object;
                 const customerId = subscription.customer as string;
 
                 // Find user
@@ -157,7 +165,7 @@ export async function POST(req: NextRequest) {
             }
 
             case "invoice.payment_succeeded": {
-                const invoice = event.data.object as Stripe.Invoice;
+                const invoice: any = event.data.object;
                 const customerId = invoice.customer as string;
                 const subscriptionId = invoice.subscription as string;
 
