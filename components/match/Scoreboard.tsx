@@ -28,6 +28,8 @@ export function Scoreboard({ matchId, initialParticipants, status }: ScoreboardP
     const supabase = createClient();
 
     useEffect(() => {
+        if (!supabase) return;
+
         // Subscribe to match_participants to get score updates
         const channel = supabase
             .channel(`match-${matchId}`)
