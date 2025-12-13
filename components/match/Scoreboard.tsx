@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client"; // Use browser client for Realtime
-import { AlignCenter, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 type Participant = {
     id: string;
