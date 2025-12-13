@@ -25,9 +25,9 @@ type ScoreboardProps = {
 export function Scoreboard({ matchId, initialParticipants, status }: ScoreboardProps) {
     const [participants, setParticipants] = useState(initialParticipants);
     const [matchStatus, setMatchStatus] = useState(status);
-    const supabase = createClient();
 
     useEffect(() => {
+        const supabase = createClient();
         if (!supabase) return;
 
         // Subscribe to match_participants to get score updates
@@ -72,7 +72,7 @@ export function Scoreboard({ matchId, initialParticipants, status }: ScoreboardP
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [matchId, supabase]);
+    }, [matchId]);
 
     const team1 = participants[0];
     const team2 = participants[1];
