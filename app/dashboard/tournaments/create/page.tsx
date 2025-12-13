@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createTournament } from "@/app/actions/tournaments";
-import { Trophy, AlignLeft, Calendar, Users, Loader2, GitBranch, Grid3x3, LayoutGrid, Shuffle } from "lucide-react";
+import { Trophy, AlignLeft, Calendar, Users, Loader2, GitBranch, Grid3x3, LayoutGrid, Shuffle, DollarSign, Award } from "lucide-react";
 
 const BRACKET_FORMATS = [
     {
@@ -35,6 +35,27 @@ const BRACKET_FORMATS = [
     }
 ];
 
+const PRIZE_DISTRIBUTIONS = [
+    {
+        value: "winner_takes_all",
+        label: "Winner Takes All",
+        description: "100% of prize pool goes to 1st place",
+        percentages: { first: 100, second: 0, third: 0 }
+    },
+    {
+        value: "top_3",
+        label: "Top 3 Split",
+        description: "60% / 25% / 15% split for top 3 places",
+        percentages: { first: 60, second: 25, third: 15 }
+    },
+    {
+        value: "top_5",
+        label: "Top 5 Split",
+        description: "50% / 25% / 12.5% / 7.5% / 5% split",
+        percentages: { first: 50, second: 25, third: 12.5, fourth: 7.5, fifth: 5 }
+    }
+];
+
 export default function CreateTournamentPage() {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
@@ -43,6 +64,11 @@ export default function CreateTournamentPage() {
     const [maxParticipants, setMaxParticipants] = useState("8");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+
+    // Payment options
+    const [isPaid, setIsPaid] = useState(false);
+    const [entryFee, setEntryFee] = useState("10");
+    const [prizeDistribution, setPrizeDistribution] = useState("winner_takes_all");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,6 +82,13 @@ export default function CreateTournamentPage() {
             formData.append("startDate", startDate);
             formData.append("format", format);
             formData.append("maxParticipants", maxParticipants);
+
+            // Payment options
+            formData.append("isPaid", isPaid.toString());
+            if (isPaid) {
+                formData.append("entryFee", entryFee);
+                formData.append("prizeDistribution", prizeDistribution);
+            }
 
             await createTournament(formData);
             // createTournament will redirect to the tournament page
@@ -173,6 +206,84 @@ export default function CreateTournamentPage() {
                                 );
                             })}
                         </div>
+                    </div>
+
+                    {/* Payment Options */}
+                    <div className="space-y-4 pt-2 border-t border-white/5">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                                    <DollarSign className="w-4 h-4" />
+                                    Tournament Entry Fee
+                                </label>
+                                <p className="text-xs text-gray-500 mt-1">Make this a paid tournament with entry fees</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsPaid(!isPaid)}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                    isPaid ? 'bg-electric-blue' : 'bg-midnight-700'
+                                }`}
+                            >
+                                <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                        isPaid ? 'translate-x-6' : 'translate-x-1'
+                                    }`}
+                                />
+                            </button>
+                        </div>
+
+                        {isPaid && (
+                            <div className="space-y-4 bg-midnight-900/30 border border-white/5 rounded-xl p-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                                        <DollarSign className="w-4 h-4" />
+                                        Entry Fee (USD)
+                                    </label>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="1000"
+                                            step="1"
+                                            value={entryFee}
+                                            onChange={(e) => setEntryFee(e.target.value)}
+                                            className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 pl-8 pr-4 text-white placeholder-gray-600 focus:outline-none focus:border-electric-blue focus:ring-1 focus:ring-electric-blue transition-all"
+                                            placeholder="10"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500">
+                                        Estimated prize pool: ${(parseFloat(entryFee) * parseInt(maxParticipants) * 0.95).toFixed(2)}
+                                        <span className="text-gray-600"> (5% platform fee)</span>
+                                    </p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                                        <Award className="w-4 h-4" />
+                                        Prize Distribution
+                                    </label>
+                                    <div className="space-y-2">
+                                        {PRIZE_DISTRIBUTIONS.map((dist) => (
+                                            <button
+                                                key={dist.value}
+                                                type="button"
+                                                onClick={() => setPrizeDistribution(dist.value)}
+                                                className={`w-full p-3 rounded-lg border text-left transition-all ${
+                                                    prizeDistribution === dist.value
+                                                        ? 'border-electric-blue bg-electric-blue/10'
+                                                        : 'border-white/10 bg-midnight-900/30 hover:border-white/20'
+                                                }`}
+                                            >
+                                                <div className="font-medium text-white mb-1">{dist.label}</div>
+                                                <div className="text-xs text-gray-400">{dist.description}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="pt-4 border-t border-white/5">

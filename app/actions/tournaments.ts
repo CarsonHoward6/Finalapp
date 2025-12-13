@@ -19,6 +19,14 @@ export async function createTournament(formData: FormData) {
     const format = formData.get("format") as string || "single_elimination";
     const maxParticipants = parseInt(formData.get("maxParticipants") as string) || 8;
 
+    // Payment options
+    const isPaid = formData.get("isPaid") === "true";
+    const entryFee = isPaid ? parseFloat(formData.get("entryFee") as string) : null;
+    const prizeDistribution = isPaid ? (formData.get("prizeDistribution") as string) : null;
+
+    // Calculate prize pool (entry fee * max participants * 0.95 for 5% platform fee)
+    const prizePool = isPaid && entryFee ? Math.round(entryFee * maxParticipants * 0.95 * 100) : null; // Store in cents
+
     const { data: tournament, error } = await supabase
         .from("tournaments")
         .insert({
@@ -28,7 +36,10 @@ export async function createTournament(formData: FormData) {
             start_date: startDate ? new Date(startDate).toISOString() : null,
             format,
             max_participants: maxParticipants,
-            status: "draft"
+            status: "draft",
+            entry_fee: entryFee ? Math.round(entryFee * 100) : null, // Convert to cents
+            prize_pool: prizePool,
+            prize_distribution: prizeDistribution
         })
         .select()
         .single();
