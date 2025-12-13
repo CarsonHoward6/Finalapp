@@ -36,7 +36,7 @@ export default async function DiscoverPage() {
         // Get featured/recently active users (fallback when no live streams)
         const { data: featuredData } = await supabase
             .from("profiles")
-            .select("id, username, full_name, avatar_url, stream_url, is_live, role, interests, stats")
+            .select("id, username, full_name, avatar_url, stream_url, is_live, live_started_at, role, interests, stats")
             .not("stream_url", "is", null)
             .order("updated_at", { ascending: false })
             .limit(12);
