@@ -1,7 +1,6 @@
 "use client";
-
+import { getSupabase } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client"; // Use browser client for Realtime
 import { Trophy } from "lucide-react";
 
 type Participant = {
@@ -27,50 +26,57 @@ export function Scoreboard({ matchId, initialParticipants, status }: ScoreboardP
     const [matchStatus, setMatchStatus] = useState(status);
 
     useEffect(() => {
-        const supabase = createClient();
-        if (!supabase) return;
+        if (!matchId) return;
+
+        const client = getSupabase();
+        if (!client) {
+            console.error('Supabase client not available');
+            return;
+        }
+
+        // Function to fetch latest scores
+        const fetchScores = async () => {
+            const { data, error } = await client
+                .from('match_participants')
+                .select(`
+                    id,
+                    score,
+                    is_winner,
+                    team:teams (
+                        name,
+                        logo_url,
+                        slug,
+                        primary_color
+                    )
+                `)
+                .eq('match_id', matchId)
+                .order('created_at');
+
+            if (data && !error) {
+                setParticipants(data as Participant[]);
+            }
+        };
 
         // Subscribe to match_participants to get score updates
-        const channel = supabase
+        const channel = client
             .channel(`match-${matchId}`)
             .on(
                 'postgres_changes',
                 {
-                    event: 'UPDATE',
+                    event: '*',
                     schema: 'public',
                     table: 'match_participants',
                     filter: `match_id=eq.${matchId}`
                 },
                 (payload) => {
-                    console.log('Score update:', payload);
-                    // Update the specific participant's score in local state
-                    setParticipants((prev) =>
-                        prev.map(p =>
-                            p.id === payload.new.id
-                                ? { ...p, score: payload.new.score, is_winner: payload.new.is_winner }
-                                : p
-                        )
-                    );
-                }
-            )
-            .on(
-                'postgres_changes',
-                {
-                    event: 'UPDATE',
-                    schema: 'public',
-                    table: 'matches',
-                    filter: `id=eq.${matchId}`
-                },
-                (payload) => {
-                    if (payload.new.status) {
-                        setMatchStatus(payload.new.status);
-                    }
+                    console.log('Score update received:', payload);
+                    fetchScores();
                 }
             )
             .subscribe();
 
         return () => {
-            supabase.removeChannel(channel);
+            channel.unsubscribe();
         };
     }, [matchId]);
 
@@ -88,7 +94,7 @@ export function Scoreboard({ matchId, initialParticipants, status }: ScoreboardP
                     <span className={`px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase box-shadow-glow ${matchStatus === 'live' ? 'bg-red-500 text-white animate-pulse' :
                         matchStatus === 'completed' ? 'bg-grid-cyan text-midnight-900' :
                             'bg-gray-700 text-gray-300'
-                        }`}>
+                    }`}>
                         {matchStatus === 'live' ? '• LIVE' : matchStatus}
                     </span>
                 </div>
@@ -104,7 +110,7 @@ export function Scoreboard({ matchId, initialParticipants, status }: ScoreboardP
                         <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-midnight-800 border-4 border-midnight-700 flex items-center justify-center order-1 md:order-2 shrink-0 relative">
                             {team1?.is_winner && <Trophy className="absolute -top-6 text-yellow-400 w-8 h-8 animate-bounce" />}
                             <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-700 to-black opacity-80"
-                                style={{ backgroundColor: team1?.team?.primary_color }}
+                                 style={{ backgroundColor: team1?.team?.primary_color }}
                             />
                         </div>
                     </div>
@@ -127,7 +133,7 @@ export function Scoreboard({ matchId, initialParticipants, status }: ScoreboardP
                         <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-midnight-800 border-4 border-midnight-700 flex items-center justify-center shrink-0 relative">
                             {team2?.is_winner && <Trophy className="absolute -top-6 text-yellow-400 w-8 h-8 animate-bounce" />}
                             <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-700 to-black opacity-80"
-                                style={{ backgroundColor: team2?.team?.primary_color }}
+                                 style={{ backgroundColor: team2?.team?.primary_color }}
                             />
                         </div>
                         <div>
