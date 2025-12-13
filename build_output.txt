@@ -1,0 +1,59 @@
+﻿
+> temp-app@0.1.0 build
+> next build
+
+node.exe :  ΓÜá Warning: Next.js inferred your 
+workspace root, but it may not be correct.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\carso\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( ΓÜá War 
+   ning: N...not be correct.:String) [], RemoteExcep  
+  tion
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ We detected multiple lockfiles and selected the 
+directory of C:\Users\carso\package-lock.json as the 
+root directory.
+ To silence this warning, set `turbopack.root` in 
+your Next.js config, or consider removing one of the 
+lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/confi
+g/next-config-js/turbopack#root-directory for more 
+information.
+ Detected additional lockfiles: 
+   * C:\Users\carso\OneDrive\Desktop\Finalapp\package-
+lock.json
+
+   Γû▓ Next.js 16.0.8 (Turbopack)
+   - Environments: .env.local
+
+ ΓÜá The "middleware" file convention is deprecated. 
+Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 30.8s
+   Running TypeScript ...
+Failed to compile.
+
+./components/match/Scoreboard.tsx:42:18
+Type error: Parameter 'payload' implicitly has an 
+'any' type.
+
+[0m [90m 40 |[39m                     
+filter[33m:[39m [32m`match_id=eq.${matchId}`[39m
+ [90m 41 |[39m                 }[33m,[39m
+[31m[1m>[22m[39m[90m 42 |[39m                 
+(payload) [33m=>[39m {
+ [90m    |[39m                  [31m[1m^[22m[39m
+ [90m 43 |[39m                     
+console[33m.[39mlog([32m'Score 
+update:'[39m[33m,[39m payload)[33m;[39m
+ [90m 44 |[39m                     [90m// Update 
+the specific participant's score in local state[39m
+ [90m 45 |[39m                     
+setParticipants((prev) [33m=>[39m[0m
+Next.js build worker exited with code: 1 and signal: 
+null
