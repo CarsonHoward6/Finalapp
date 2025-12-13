@@ -34,7 +34,7 @@ export default function SignupPage() {
 
         setIsLoading(true);
 
-        if (!supabase.auth) {
+        if (!supabase || !supabase.auth) {
             setError("Authentication service not available");
             setIsLoading(false);
             return;

@@ -20,7 +20,7 @@ export default function LoginPage() {
         setIsLoading(true);
         setError("");
 
-        if (!supabase.auth) {
+        if (!supabase || !supabase.auth) {
             setError("Authentication service not available");
             setIsLoading(false);
             return;
@@ -41,7 +41,7 @@ export default function LoginPage() {
     };
 
     const handleGoogleLogin = async () => {
-        if (!supabase.auth) {
+        if (!supabase || !supabase.auth) {
             setError("Authentication service not available");
             return;
         }
@@ -56,7 +56,7 @@ export default function LoginPage() {
     };
 
     const handleDiscordLogin = async () => {
-        if (!supabase.auth) {
+        if (!supabase || !supabase.auth) {
             setError("Authentication service not available");
             return;
         }
