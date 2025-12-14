@@ -22,7 +22,12 @@ export async function updateEmail(newEmail: string) {
         throw new Error(error.message);
     }
 
-    revalidatePath("/dashboard/settings");
+    try {
+        revalidatePath("/dashboard/settings");
+    } catch (e) {
+        console.log("Revalidate settings failed:", e);
+    }
+
     return { success: true, message: "Confirmation email sent to new address" };
 }
 
@@ -36,14 +41,24 @@ export async function updatePassword(currentPassword: string, newPassword: strin
         throw new Error("Unauthorized");
     }
 
-    // Verify current password
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: user.email!,
-        password: currentPassword
-    });
+    // Check if user is OAuth or email/password
+    const { data: { user: userData } } = await supabase.auth.getUser();
+    const isOAuthUser = userData?.app_metadata?.provider && userData.app_metadata.provider !== 'email';
 
-    if (signInError) {
-        throw new Error("Current password is incorrect");
+    // Only verify password for email/password users
+    if (!isOAuthUser) {
+        if (!currentPassword) {
+            throw new Error("Current password is required");
+        }
+
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: user.email!,
+            password: currentPassword
+        });
+
+        if (signInError) {
+            throw new Error("Current password is incorrect");
+        }
     }
 
     // Update to new password
@@ -56,7 +71,12 @@ export async function updatePassword(currentPassword: string, newPassword: strin
         throw new Error(error.message);
     }
 
-    revalidatePath("/dashboard/settings");
+    try {
+        revalidatePath("/dashboard/settings");
+    } catch (e) {
+        console.log("Revalidate settings failed:", e);
+    }
+
     return { success: true, message: "Password updated successfully" };
 }
 
@@ -90,7 +110,12 @@ export async function updateNotificationPreferences(preferences: {
         throw new Error("Failed to update notification preferences");
     }
 
-    revalidatePath("/dashboard/settings");
+    try {
+        revalidatePath("/dashboard/settings");
+    } catch (e) {
+        console.log("Revalidate settings failed:", e);
+    }
+
     return { success: true };
 }
 
@@ -122,7 +147,12 @@ export async function updatePrivacySettings(settings: {
         throw new Error("Failed to update privacy settings");
     }
 
-    revalidatePath("/dashboard/settings");
+    try {
+        revalidatePath("/dashboard/settings");
+    } catch (e) {
+        console.log("Revalidate settings failed:", e);
+    }
+
     return { success: true };
 }
 
@@ -136,14 +166,19 @@ export async function deleteAccount(password: string) {
         throw new Error("Unauthorized");
     }
 
-    // Verify password before deletion
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: user.email!,
-        password: password
-    });
+    // Check if user is OAuth or email/password
+    const isOAuthUser = user?.app_metadata?.provider && user.app_metadata.provider !== 'email';
 
-    if (signInError) {
-        throw new Error("Password is incorrect");
+    // Only verify password for email/password users
+    if (!isOAuthUser) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: user.email!,
+            password: password
+        });
+
+        if (signInError) {
+            throw new Error("Password is incorrect");
+        }
     }
 
     // Delete user's profile data (cascade should handle related data)
