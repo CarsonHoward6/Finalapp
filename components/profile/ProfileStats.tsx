@@ -109,12 +109,12 @@ export function ProfileStats({ stats, editable = false }: ProfileStatsProps) {
                             {isEditing ? (
                                 <input
                                     type="text"
-                                    value={value}
+                                    value={String(value ?? '')}
                                     onChange={(e) => setLocalStats(prev => ({ ...prev, [key]: e.target.value }))}
                                     className="w-full text-center text-xl font-bold text-white bg-transparent border-b border-white/20 focus:border-grid-cyan outline-none"
                                 />
                             ) : (
-                                <div className="text-xl font-bold text-white">{value}</div>
+                                <div className="text-xl font-bold text-white">{String(value ?? '')}</div>
                             )}
                             <div className="text-xs text-gray-500 uppercase tracking-wider mt-1">{key}</div>
                         </div>
