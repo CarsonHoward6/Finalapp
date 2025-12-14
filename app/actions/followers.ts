@@ -41,19 +41,35 @@ export async function followUser(targetUserId: string) {
             .eq("id", user.id)
             .single();
 
-        await supabase.from("notifications").insert({
-            user_id: targetUserId,
-            type: "follow",
-            message: `${profile?.username || "Someone"} started following you`,
-            data: { follower_id: user.id },
-        });
+        if (profile?.username) {
+            const { error: notifError } = await supabase.from("notifications").insert({
+                user_id: targetUserId,
+                type: "follow",
+                message: `${profile.username} started following you`,
+                data: { follower_id: user.id },
+            });
+
+            if (notifError) {
+                console.log("Notification creation failed (table may not exist):", notifError);
+            }
+        }
     } catch (notifError) {
         // Notifications table might not exist - that's okay
-        console.log("Notification creation skipped");
+        console.log("Notification creation skipped:", notifError);
     }
 
-    revalidatePath("/dashboard/connect");
-    revalidatePath("/dashboard/profile");
+    try {
+        revalidatePath("/dashboard/connect");
+    } catch (e) {
+        console.log("Revalidate connect failed:", e);
+    }
+
+    try {
+        revalidatePath("/dashboard/profile");
+    } catch (e) {
+        console.log("Revalidate profile failed:", e);
+    }
+
     return { success: true };
 }
 
@@ -78,8 +94,18 @@ export async function unfollowUser(targetUserId: string) {
         throw new Error("Failed to unfollow user");
     }
 
-    revalidatePath("/dashboard/connect");
-    revalidatePath("/dashboard/profile");
+    try {
+        revalidatePath("/dashboard/connect");
+    } catch (e) {
+        console.log("Revalidate connect failed:", e);
+    }
+
+    try {
+        revalidatePath("/dashboard/profile");
+    } catch (e) {
+        console.log("Revalidate profile failed:", e);
+    }
+
     return { success: true };
 }
 

@@ -92,7 +92,7 @@ export default function CreateTeamPage() {
                             value={slug}
                             onChange={(e) => setSlug(e.target.value)}
                             required
-                            pattern="[a-z0-9-]+"
+                            pattern="[a-z0-9\-]+"
                             title="Lowercase letters, numbers, and hyphens only."
                             className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-gray-600 focus:outline-none focus:border-grid-cyan focus:ring-1 focus:ring-grid-cyan transition-all"
                             placeholder="e.g. sentinels-usa"
