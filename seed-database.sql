@@ -3,7 +3,7 @@ ALTER TABLE public.tournaments
 ADD COLUMN IF NOT EXISTS entry_fee integer,
 ADD COLUMN IF NOT EXISTS prize_distribution text;
 
--- Populate profiles if empty (uses first auth user)
+-- Populate profiles if empty (creates profile for ALL auth users)
 INSERT INTO public.profiles (id, username, full_name, avatar_url, bio, country, role, onboarding_completed, stats)
 SELECT
     id,
@@ -16,8 +16,7 @@ SELECT
     true,
     '{"wins": 10, "losses": 5, "rank": 1}'::jsonb
 FROM auth.users
-WHERE NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.users.id)
-LIMIT 1;
+WHERE NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.users.id);
 
 -- Populate followers (creates sample follows between users)
 INSERT INTO public.followers (follower_id, following_id)
@@ -54,7 +53,7 @@ LIMIT 1;
 
 -- Populate team_members if empty
 INSERT INTO public.team_members (team_id, user_id, role)
-SELECT t.id, u.id, 'captain'
+SELECT t.id, u.id, 'owner'
 FROM public.teams t, auth.users u
 WHERE NOT EXISTS (SELECT 1 FROM public.team_members WHERE team_id = t.id)
 LIMIT 1;
