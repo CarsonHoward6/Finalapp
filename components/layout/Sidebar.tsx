@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/ui/branding/Logo";
+import { signOut } from "@/app/actions/auth";
 import {
     LayoutDashboard,
     Users,
@@ -115,6 +116,7 @@ export function Sidebar() {
 
             <div className="p-4 border-t border-white/5">
                 <button
+                    onClick={() => signOut()}
                     className={cn(
                         "flex items-center gap-3 px-4 py-3 w-full text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors",
                         isCollapsed && "justify-center"
