@@ -53,7 +53,12 @@ export function Scoreboard({ matchId, initialParticipants, status }: ScoreboardP
                 .order('created_at');
 
             if (data && !error) {
-                setParticipants(data as Participant[]);
+                // Transform data: Supabase returns team as array from join, extract first element
+                const transformed = data.map((p: { id: string; score: number; is_winner: boolean; team: Array<{ name: string; logo_url?: string; slug: string; primary_color?: string }> }) => ({
+                    ...p,
+                    team: p.team?.[0] ?? { name: 'TBD', slug: '' }
+                }));
+                setParticipants(transformed as Participant[]);
             }
         };
 
