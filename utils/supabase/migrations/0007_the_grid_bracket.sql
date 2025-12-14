@@ -10,12 +10,11 @@ ADD COLUMN IF NOT EXISTS team_1_score int DEFAULT 0,
 ADD COLUMN IF NOT EXISTS team_2_score int DEFAULT 0,
 ADD COLUMN IF NOT EXISTS winner_id uuid REFERENCES teams(id) ON DELETE SET NULL;
 
--- Create index for bracket queries
+-- Create indexes for bracket queries
 CREATE INDEX IF NOT EXISTS idx_matches_tournament_bracket ON matches(tournament_id, bracket_position);
-CREATE INDEX IF NOT EXISTS idx_matches_round_position ON matches(
-    (bracket_position->>'round')::int,
-    (bracket_position->>'position')::int
-);
+CREATE INDEX IF NOT EXISTS idx_matches_team_1 ON matches(team_1_id);
+CREATE INDEX IF NOT EXISTS idx_matches_team_2 ON matches(team_2_id);
+CREATE INDEX IF NOT EXISTS idx_matches_winner ON matches(winner_id);
 
 -- Add bracket_data jsonb to tournaments for quick access to bracket structure
 ALTER TABLE tournaments
