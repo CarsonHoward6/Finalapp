@@ -49,6 +49,11 @@ export async function createTournament(formData: FormData) {
         throw new Error("Failed to create tournament");
     }
 
-    revalidatePath("/dashboard/tournaments");
+    try {
+        revalidatePath("/dashboard/tournaments");
+    } catch (e) {
+        console.log("Revalidate tournaments failed:", e);
+    }
+
     redirect(`/dashboard/tournaments/${tournament.id}`);
 }
