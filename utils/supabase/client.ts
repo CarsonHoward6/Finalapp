@@ -29,7 +29,7 @@ function createMockClient(): Partial<SupabaseClient> {
         auth: mockAuth as any,
         from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }) }) }) }) as any,
         channel: () => mockChannel as any,
-        removeChannel: () => {}
+        removeChannel: async () => 'ok' as const
     };
 }
 
