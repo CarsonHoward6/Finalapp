@@ -149,10 +149,10 @@ export default function CreateTournamentPage() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                                 <Calendar className="w-4 h-4" />
-                                Start Date & Time
+                                Start Date
                             </label>
                             <input
-                                type="datetime-local"
+                                type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
                                 required
