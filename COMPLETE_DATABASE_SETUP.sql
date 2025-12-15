@@ -57,7 +57,7 @@ END $$;
 
 CREATE TYPE user_role AS ENUM ('admin', 'organizer', 'player', 'coach', 'spectator');
 CREATE TYPE tournament_format AS ENUM ('single_elimination', 'double_elimination', 'round_robin', 'swiss', 'groups_playoffs');
-CREATE TYPE tournament_status AS ENUM ('draft', 'published', 'registration_open', 'ongoing', 'completed', 'cancelled');
+CREATE TYPE tournament_status AS ENUM ('draft', 'published', 'registration_open', 'ongoing', 'completed', 'cancelled', 'registration');
 CREATE TYPE match_status AS ENUM ('scheduled', 'live', 'completed', 'disputed', 'cancelled');
 CREATE TYPE participant_type AS ENUM ('team', 'player');
 CREATE TYPE notification_type AS ENUM ('follow', 'like', 'comment', 'mention', 'tournament_invite', 'team_invite', 'live_stream');
@@ -151,6 +151,16 @@ CREATE TABLE tournaments (
     max_prize_winners INTEGER DEFAULT 3,
     stripe_account_id TEXT,
 
+    -- Game Metadata & Daily Tournaments
+    game_title TEXT,
+    sport_type TEXT,
+    stats JSONB DEFAULT '{}',
+    role TEXT CHECK (role IN ('player', 'team')) DEFAULT 'team',
+    game TEXT,
+    team_size INTEGER DEFAULT 1,
+    is_daily BOOLEAN DEFAULT false,
+    bracket_data JSONB DEFAULT '{"rounds": [], "current_round": 0}',
+
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -188,6 +198,15 @@ CREATE TABLE matches (
     vod_url TEXT,
     demo_url TEXT,
     match_data JSONB DEFAULT '{}',
+    
+    -- Bracket System
+    bracket_position JSONB DEFAULT '{}', -- {round: 1, position: 1}
+    team_1_id UUID REFERENCES teams(id) ON DELETE SET NULL,
+    team_2_id UUID REFERENCES teams(id) ON DELETE SET NULL,
+    team_1_score INT DEFAULT 0,
+    team_2_score INT DEFAULT 0,
+    winner_id UUID REFERENCES teams(id) ON DELETE SET NULL,
+
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -196,6 +215,7 @@ CREATE TABLE match_participants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     match_id UUID REFERENCES matches(id) ON DELETE CASCADE NOT NULL,
     participant_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    team_id UUID REFERENCES teams(id) ON DELETE SET NULL,
     participant_type participant_type DEFAULT 'player',
     score INT DEFAULT 0,
     result TEXT,
@@ -245,6 +265,11 @@ CREATE TABLE posts (
     content TEXT,
     media_urls TEXT[] DEFAULT '{}',
     media_types TEXT[] DEFAULT '{}',
+    
+    -- Tournament Integration
+    tournament_id UUID REFERENCES tournaments(id) ON DELETE SET NULL,
+    post_type TEXT CHECK (post_type IN ('general', 'tournament', 'team', 'match')) DEFAULT 'general',
+
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -388,11 +413,20 @@ CREATE INDEX idx_team_members_user ON team_members(user_id);
 CREATE INDEX idx_tournaments_organizer ON tournaments(organizer_id);
 CREATE INDEX idx_tournaments_status ON tournaments(status);
 CREATE INDEX idx_tournaments_requires_payment ON tournaments(requires_payment);
+CREATE INDEX idx_tournaments_game_title ON tournaments(game_title) WHERE game_title IS NOT NULL;
+CREATE INDEX idx_tournaments_sport_type ON tournaments(sport_type) WHERE sport_type IS NOT NULL;
+CREATE INDEX idx_tournaments_daily ON tournaments(is_daily, start_date);
+CREATE INDEX idx_tournaments_game ON tournaments(game);
 CREATE INDEX idx_tournament_participants_tournament ON tournament_participants(tournament_id);
 
 -- Matches indexes
 CREATE INDEX idx_matches_tournament ON matches(tournament_id);
 CREATE INDEX idx_matches_status ON matches(status);
+CREATE INDEX idx_matches_tournament_bracket ON matches(tournament_id, bracket_position);
+CREATE INDEX idx_matches_team_1 ON matches(team_1_id);
+CREATE INDEX idx_matches_team_2 ON matches(team_2_id);
+CREATE INDEX idx_matches_winner ON matches(winner_id);
+
 
 -- Social indexes
 CREATE INDEX idx_followers_follower ON followers(follower_id);
@@ -403,6 +437,8 @@ CREATE INDEX idx_notifications_unread ON notifications(user_id, read) WHERE read
 -- Posts indexes
 CREATE INDEX idx_posts_user_id ON posts(user_id);
 CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
+CREATE INDEX idx_posts_tournament_id ON posts(tournament_id) WHERE tournament_id IS NOT NULL;
+CREATE INDEX idx_posts_post_type ON posts(post_type);
 CREATE INDEX idx_likes_post_id ON likes(post_id);
 CREATE INDEX idx_likes_user_id ON likes(user_id);
 CREATE INDEX idx_comments_post_id ON comments(post_id);
@@ -524,8 +560,93 @@ CREATE POLICY "Winners can view their own prizes" ON prize_distributions FOR SEL
 CREATE POLICY "Users can view their own Stripe account" ON stripe_connect_accounts FOR SELECT USING (auth.uid() = user_id);
 
 -- ============================================
--- STEP 11: TRIGGERS
+-- STEP 11: FUNCTIONS & TRIGGERS
 -- ============================================
+
+-- Daily Tournament Generator
+CREATE OR REPLACE FUNCTION generate_daily_tournaments()
+RETURNS void AS $$
+DECLARE
+    today_date DATE := CURRENT_DATE;
+    fortnite_time TIMESTAMPTZ;
+    rocket_league_time TIMESTAMPTZ;
+    team_sizes INT[] := ARRAY[1, 2, 3, 4];
+    selected_team_size INT;
+BEGIN
+    -- Set tournament times for today
+    fortnite_time := today_date + TIME '10:00:00';
+    rocket_league_time := today_date + TIME '17:00:00';
+
+    -- Randomly select team size for today
+    selected_team_size := team_sizes[1 + floor(random() * 4)::int];
+
+    -- Create Fortnite tournament if doesn't exist for today
+    INSERT INTO tournaments (
+        organizer_id,
+        name,
+        description,
+        start_date,
+        format,
+        status,
+        max_participants,
+        entry_fee,
+        game,
+        team_size,
+        is_daily
+    )
+    SELECT
+        (SELECT id FROM auth.users LIMIT 1), -- System user or first admin
+        'Daily Fortnite ' || selected_team_size || 'v' || selected_team_size || ' Tournament',
+        'Free daily Fortnite tournament! ' || selected_team_size || 'v' || selected_team_size || ' bracket. Signup opens 15 minutes before start.',
+        fortnite_time,
+        'single_elimination',
+        'registration',
+        16,
+        0,
+        'Fortnite',
+        selected_team_size,
+        true
+    WHERE NOT EXISTS (
+        SELECT 1 FROM tournaments
+        WHERE game = 'Fortnite'
+        AND is_daily = true
+        AND DATE(start_date) = today_date
+    );
+
+    -- Create Rocket League tournament if doesn't exist for today
+    INSERT INTO tournaments (
+        organizer_id,
+        name,
+        description,
+        start_date,
+        format,
+        status,
+        max_participants,
+        entry_fee,
+        game,
+        team_size,
+        is_daily
+    )
+    SELECT
+        (SELECT id FROM auth.users LIMIT 1), -- System user or first admin
+        'Daily Rocket League ' || selected_team_size || 'v' || selected_team_size || ' Tournament',
+        'Free daily Rocket League tournament! ' || selected_team_size || 'v' || selected_team_size || ' bracket. Signup opens 15 minutes before start.',
+        rocket_league_time,
+        'single_elimination',
+        'registration',
+        16,
+        0,
+        'Rocket League',
+        selected_team_size,
+        true
+    WHERE NOT EXISTS (
+        SELECT 1 FROM tournaments
+        WHERE game = 'Rocket League'
+        AND is_daily = true
+        AND DATE(start_date) = today_date
+    );
+END;
+$$ LANGUAGE plpgsql;
 
 -- Auto-create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -602,6 +723,9 @@ FROM auth.users
 WHERE email = 'carsonhoward6@gmail.com'
 ON CONFLICT (user_id) DO UPDATE SET status = 'active', plan = 'pro', updated_at = NOW();
 
+-- Generate initial daily tournaments
+SELECT generate_daily_tournaments();
+
 -- ============================================
 -- SUCCESS MESSAGE
 -- ============================================
@@ -630,6 +754,9 @@ BEGIN
     RAISE NOTICE '  ✓ Indexes for performance';
     RAISE NOTICE '  ✓ Auto-create profile on signup';
     RAISE NOTICE '  ✓ Owner access for carsonhoward6@gmail.com';
+    RAISE NOTICE '  ✓ Daily Tournaments Generator';
+    RAISE NOTICE '  ✓ The Grid Bracket System';
+    RAISE NOTICE '  ✓ Game Metadata Support';
     RAISE NOTICE '';
     RAISE NOTICE 'Next steps:';
     RAISE NOTICE '  1. Create Storage buckets (avatars, post-media)';
@@ -637,5 +764,7 @@ BEGIN
     RAISE NOTICE '  3. Set up Stripe webhooks (optional)';
     RAISE NOTICE '  4. Test your app!';
     RAISE NOTICE '';
+    RAISE NOTICE '========================================';
+    RAISE NOTICE '✅ ALL SYSTEMS GO! 🚀';
     RAISE NOTICE '========================================';
 END $$;
