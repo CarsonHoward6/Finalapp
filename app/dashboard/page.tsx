@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { Trophy, Users, Calendar, PlayCircle, TrendingUp, Radio, Bell } from "lucide-react";
+import { UserSearch } from "@/components/users/UserSearch";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -136,6 +137,9 @@ export default async function DashboardPage() {
                     </Link>
                 </div>
             </div>
+
+            {/* User Search Section */}
+            <UserSearch />
 
             {/* Live Matches */}
             {liveMatches && liveMatches.length > 0 && (

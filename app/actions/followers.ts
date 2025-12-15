@@ -3,6 +3,45 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
+// Search for users by username or full name
+export async function searchUsers(query: string) {
+    const supabase = await createClient();
+    if (!supabase) return [];
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!query || query.length < 2) return [];
+
+    const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, full_name, avatar_url")
+        .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
+        .neq("id", user?.id || "")
+        .limit(10);
+
+    if (error) {
+        console.error("Search users error:", error);
+        return [];
+    }
+
+    // If user is logged in, check which users they're following
+    if (user && data) {
+        const { data: followingData } = await supabase
+            .from("followers")
+            .select("following_id")
+            .eq("follower_id", user.id);
+
+        const followingSet = new Set(followingData?.map(f => f.following_id) || []);
+
+        return data.map(profile => ({
+            ...profile,
+            isFollowing: followingSet.has(profile.id)
+        }));
+    }
+
+    return data || [];
+}
+
 // Follow a user
 export async function followUser(targetUserId: string) {
     const supabase = await createClient();

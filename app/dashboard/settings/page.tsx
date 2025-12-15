@@ -5,7 +5,7 @@ import { NotificationSettingsSection } from "@/components/settings/NotificationS
 import { PrivacySettingsSection } from "@/components/settings/PrivacySettingsSection";
 import { PayoutAccountSection } from "@/components/settings/PayoutAccountSection";
 import { DangerZoneSection } from "@/components/settings/DangerZoneSection";
-import { AvatarUploadSection } from "@/components/settings/AvatarUploadSection";
+import { AvatarSelectorSection } from "@/components/settings/AvatarSelectorSection";
 import { getCurrentSettings } from "@/app/actions/settings";
 
 export default async function SettingsPage() {
@@ -27,6 +27,16 @@ export default async function SettingsPage() {
         .eq("id", user.id)
         .single();
 
+    // Check if user has Pro subscription
+    const { data: subscription } = await supabase
+        .from("subscriptions")
+        .select("status")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .single();
+
+    const isProUser = !!subscription;
+
     // Get current settings
     const currentSettings = await getCurrentSettings();
 
@@ -38,9 +48,9 @@ export default async function SettingsPage() {
             </div>
 
             <div className="grid gap-6">
-                <AvatarUploadSection
+                <AvatarSelectorSection
                     currentAvatar={profile?.avatar_url}
-                    userId={user.id}
+                    isProUser={isProUser}
                 />
 
                 <ProfileSettingsSection
