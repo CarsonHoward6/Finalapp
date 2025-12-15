@@ -3,7 +3,11 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
     // If credentials are not set or are placeholders, skip Supabase logic to allow app to run
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your-project-url') {
+    if (
+        !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your-project-url' ||
+        !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) {
         return NextResponse.next({
             request,
         })
