@@ -53,28 +53,32 @@ export function ProfileSettingsSection({ initialData }: ProfileSettingsSectionPr
                 )}
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                    <label htmlFor="profile-full-name" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                         <User className="w-4 h-4" />
                         Full Name
                     </label>
                     <input
+                        id="profile-full-name"
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
+                        autoComplete="name"
                         className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-gray-600 focus:outline-none focus:border-grid-cyan focus:ring-1 focus:ring-grid-cyan transition-all"
                         placeholder="Enter your full name"
                     />
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                    <label htmlFor="profile-username" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                         <Mail className="w-4 h-4" />
                         Username
                     </label>
                     <input
+                        id="profile-username"
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
+                        autoComplete="username"
                         className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-gray-600 focus:outline-none focus:border-grid-cyan focus:ring-1 focus:ring-grid-cyan transition-all"
                         placeholder="Enter your username"
                         required
@@ -82,11 +86,12 @@ export function ProfileSettingsSection({ initialData }: ProfileSettingsSectionPr
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                    <label htmlFor="profile-bio" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                         <FileText className="w-4 h-4" />
                         Bio
                     </label>
                     <textarea
+                        id="profile-bio"
                         value={bio}
                         onChange={(e) => setBio(e.target.value)}
                         rows={3}
@@ -96,14 +101,16 @@ export function ProfileSettingsSection({ initialData }: ProfileSettingsSectionPr
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                    <label htmlFor="profile-country" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                         <Globe className="w-4 h-4" />
                         Country
                     </label>
                     <input
+                        id="profile-country"
                         type="text"
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
+                        autoComplete="country-name"
                         className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-gray-600 focus:outline-none focus:border-grid-cyan focus:ring-1 focus:ring-grid-cyan transition-all"
                         placeholder="Enter your country"
                     />

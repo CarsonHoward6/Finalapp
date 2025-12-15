@@ -53,6 +53,11 @@ export async function createTeam(formData: FormData) {
         // Optional rollback logic here
     }
 
-    revalidatePath("/dashboard/teams");
+    try {
+        revalidatePath("/dashboard/teams");
+    } catch (e) {
+        console.log("Revalidate teams failed:", e);
+    }
+
     redirect(`/dashboard/teams/${team.slug}`);
 }

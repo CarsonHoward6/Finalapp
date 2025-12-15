@@ -117,26 +117,31 @@ export default function CreateTournamentPage() {
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                        <label htmlFor="tournament-name" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                             <Trophy className="w-4 h-4" />
                             Tournament Name
                         </label>
                         <input
+                            id="tournament-name"
+                            name="tournamentName"
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
+                            autoComplete="off"
                             className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-gray-600 focus:outline-none focus:border-electric-blue focus:ring-1 focus:ring-electric-blue transition-all"
                             placeholder="Winter Championship 2024"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                        <label htmlFor="tournament-description" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                             <AlignLeft className="w-4 h-4" />
                             Description
                         </label>
                         <textarea
+                            id="tournament-description"
+                            name="tournamentDescription"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             rows={3}
@@ -147,11 +152,13 @@ export default function CreateTournamentPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                            <label htmlFor="tournament-start-date" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                                 <Calendar className="w-4 h-4" />
                                 Start Date
                             </label>
                             <input
+                                id="tournament-start-date"
+                                name="startDate"
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
@@ -161,11 +168,13 @@ export default function CreateTournamentPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                            <label htmlFor="tournament-max-participants" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                                 <Users className="w-4 h-4" />
                                 Max Participants
                             </label>
                             <select
+                                id="tournament-max-participants"
+                                name="maxParticipants"
                                 value={maxParticipants}
                                 onChange={(e) => setMaxParticipants(e.target.value)}
                                 className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-electric-blue focus:ring-1 focus:ring-electric-blue transition-all"
@@ -236,19 +245,22 @@ export default function CreateTournamentPage() {
                         {isPaid && (
                             <div className="space-y-4 bg-midnight-900/30 border border-white/5 rounded-xl p-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                                    <label htmlFor="tournament-entry-fee" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                                         <DollarSign className="w-4 h-4" />
                                         Entry Fee (USD)
                                     </label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                                         <input
+                                            id="tournament-entry-fee"
+                                            name="entryFee"
                                             type="number"
                                             min="1"
                                             max="1000"
                                             step="1"
                                             value={entryFee}
                                             onChange={(e) => setEntryFee(e.target.value)}
+                                            autoComplete="off"
                                             className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 pl-8 pr-4 text-white placeholder-gray-600 focus:outline-none focus:border-electric-blue focus:ring-1 focus:ring-electric-blue transition-all"
                                             placeholder="10"
                                         />

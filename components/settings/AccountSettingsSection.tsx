@@ -74,15 +74,17 @@ export function AccountSettingsSection({ currentEmail }: AccountSettingsSectionP
 
             <form onSubmit={handleEmailUpdate} className="space-y-4">
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                    <label htmlFor="account-new-email" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                         <Mail className="w-4 h-4" />
                         Change Email
                     </label>
                     <p className="text-sm text-gray-500">Current: {currentEmail}</p>
                     <input
+                        id="account-new-email"
                         type="email"
                         value={newEmail}
                         onChange={(e) => setNewEmail(e.target.value)}
+                        autoComplete="email"
                         className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-gray-600 focus:outline-none focus:border-grid-cyan focus:ring-1 focus:ring-grid-cyan transition-all"
                         placeholder="Enter new email"
                     />
@@ -101,34 +103,42 @@ export function AccountSettingsSection({ currentEmail }: AccountSettingsSectionP
 
             <form onSubmit={handlePasswordUpdate} className="space-y-4">
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                    <label htmlFor="account-current-password" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                         <Lock className="w-4 h-4" />
                         Change Password
                     </label>
                     <input
+                        id="account-current-password"
                         type="password"
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
+                        autoComplete="current-password"
                         className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-gray-600 focus:outline-none focus:border-grid-cyan focus:ring-1 focus:ring-grid-cyan transition-all"
                         placeholder="Current password"
                     />
                 </div>
 
                 <div className="space-y-2">
+                    <label htmlFor="account-new-password" className="sr-only">New Password</label>
                     <input
+                        id="account-new-password"
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
+                        autoComplete="new-password"
                         className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-gray-600 focus:outline-none focus:border-grid-cyan focus:ring-1 focus:ring-grid-cyan transition-all"
                         placeholder="New password (min 6 characters)"
                     />
                 </div>
 
                 <div className="space-y-2">
+                    <label htmlFor="account-confirm-password" className="sr-only">Confirm Password</label>
                     <input
+                        id="account-confirm-password"
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
+                        autoComplete="new-password"
                         className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-gray-600 focus:outline-none focus:border-grid-cyan focus:ring-1 focus:ring-grid-cyan transition-all"
                         placeholder="Confirm new password"
                     />

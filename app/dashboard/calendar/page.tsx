@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { Calendar, Trophy, Clock } from "lucide-react";
 import { CreateEventModal } from "@/components/calendar/CreateEventModal";
+import { CalendarGrid } from "@/components/calendar/CalendarGrid";
 import { getCalendarEvents } from "@/app/actions/calendar";
 
 export default async function CalendarPage() {
@@ -74,6 +75,14 @@ export default async function CalendarPage() {
         })) || [])
     ].sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime());
 
+    // Prepare events for CalendarGrid
+    const calendarEvents = events.map(e => ({
+        id: e.id,
+        title: e.title,
+        date: e.date || "",
+        color: e.color || "bg-gray-500"
+    }));
+
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
@@ -83,6 +92,12 @@ export default async function CalendarPage() {
                 <CreateEventModal teams={teams} />
             </div>
 
+            {/* Calendar Grid View (Primary) */}
+            <div className="mb-8">
+                <CalendarGrid events={calendarEvents} />
+            </div>
+
+            {/* List View (Secondary) */}
             <div className="bg-midnight-800 border border-white/5 rounded-xl p-6">
                 {events.length === 0 ? (
                     <p className="text-gray-500 text-center py-12">No upcoming events scheduled.</p>

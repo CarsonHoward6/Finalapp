@@ -57,9 +57,11 @@ export function NotificationSettingsSection({ initialPreferences }: Notification
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-3">
-                    <label className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
+                    <label htmlFor="notif-email" className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
                         <span className="text-gray-300">Email Notifications</span>
                         <input
+                            id="notif-email"
+                            name="emailNotifications"
                             type="checkbox"
                             checked={preferences.email_notifications}
                             onChange={() => handleToggle("email_notifications")}
@@ -67,9 +69,11 @@ export function NotificationSettingsSection({ initialPreferences }: Notification
                         />
                     </label>
 
-                    <label className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
+                    <label htmlFor="notif-push" className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
                         <span className="text-gray-300">Push Notifications</span>
                         <input
+                            id="notif-push"
+                            name="pushNotifications"
                             type="checkbox"
                             checked={preferences.push_notifications}
                             onChange={() => handleToggle("push_notifications")}
@@ -77,9 +81,11 @@ export function NotificationSettingsSection({ initialPreferences }: Notification
                         />
                     </label>
 
-                    <label className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
+                    <label htmlFor="notif-tournament" className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
                         <span className="text-gray-300">Tournament Updates</span>
                         <input
+                            id="notif-tournament"
+                            name="tournamentUpdates"
                             type="checkbox"
                             checked={preferences.tournament_updates}
                             onChange={() => handleToggle("tournament_updates")}
@@ -87,9 +93,11 @@ export function NotificationSettingsSection({ initialPreferences }: Notification
                         />
                     </label>
 
-                    <label className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
+                    <label htmlFor="notif-team" className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
                         <span className="text-gray-300">Team Updates</span>
                         <input
+                            id="notif-team"
+                            name="teamUpdates"
                             type="checkbox"
                             checked={preferences.team_updates}
                             onChange={() => handleToggle("team_updates")}
@@ -97,9 +105,11 @@ export function NotificationSettingsSection({ initialPreferences }: Notification
                         />
                     </label>
 
-                    <label className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
+                    <label htmlFor="notif-follower" className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
                         <span className="text-gray-300">Follower Updates</span>
                         <input
+                            id="notif-follower"
+                            name="followerUpdates"
                             type="checkbox"
                             checked={preferences.follower_updates}
                             onChange={() => handleToggle("follower_updates")}
@@ -107,9 +117,11 @@ export function NotificationSettingsSection({ initialPreferences }: Notification
                         />
                     </label>
 
-                    <label className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
+                    <label htmlFor="notif-live" className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
                         <span className="text-gray-300">Live Stream Notifications</span>
                         <input
+                            id="notif-live"
+                            name="liveNotifications"
                             type="checkbox"
                             checked={preferences.live_notifications}
                             onChange={() => handleToggle("live_notifications")}

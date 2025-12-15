@@ -27,9 +27,13 @@ export default async function ExploreTeamsPage() {
             {/* Search/Filter Bar (Placeholder) */}
             <div className="mb-6 relative">
                 <Search className="w-5 h-5 absolute left-4 top-3 text-gray-500" />
+                <label htmlFor="team-search" className="sr-only">Search teams</label>
                 <input
+                    id="team-search"
+                    name="search"
                     type="text"
                     placeholder="Search teams by name, game, or region..."
+                    autoComplete="off"
                     className="w-full bg-midnight-800 border border-white/10 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:border-grid-cyan transition-colors"
                 />
             </div>

@@ -28,7 +28,6 @@ const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Feed", href: "/feed", icon: Newspaper },
     { name: "Discover", href: "/discover", icon: Radio },
-    { name: "My Profile", href: "/dashboard/profile", icon: User },
     { name: "My Teams", href: "/dashboard/teams", icon: Users },
     { name: "Connect", href: "/dashboard/connect", icon: UserPlus },
     { name: "Tournaments", href: "/dashboard/tournaments", icon: Trophy },

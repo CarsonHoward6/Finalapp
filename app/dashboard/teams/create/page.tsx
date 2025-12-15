@@ -68,30 +68,36 @@ export default function CreateTeamPage() {
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                        <label htmlFor="team-name" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                             <Flag className="w-4 h-4" />
                             Team Name
                         </label>
                         <input
+                            id="team-name"
+                            name="teamName"
                             type="text"
                             value={name}
                             onChange={handleNameChange}
                             required
+                            autoComplete="off"
                             className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-gray-600 focus:outline-none focus:border-grid-cyan focus:ring-1 focus:ring-grid-cyan transition-all"
                             placeholder="e.g. Sentinels"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                        <label htmlFor="team-slug" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                             <Hash className="w-4 h-4" />
                             Team Slug (URL)
                         </label>
                         <input
+                            id="team-slug"
+                            name="teamSlug"
                             type="text"
                             value={slug}
                             onChange={(e) => setSlug(e.target.value)}
                             required
+                            autoComplete="off"
                             pattern="[a-z0-9\-]+"
                             title="Lowercase letters, numbers, and hyphens only."
                             className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-gray-600 focus:outline-none focus:border-grid-cyan focus:ring-1 focus:ring-grid-cyan transition-all"
@@ -101,11 +107,13 @@ export default function CreateTeamPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                        <label htmlFor="team-description" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                             <FileText className="w-4 h-4" />
                             Description
                         </label>
                         <textarea
+                            id="team-description"
+                            name="teamDescription"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             rows={3}
@@ -116,12 +124,14 @@ export default function CreateTeamPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                            <label htmlFor="team-primary-color" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                                 <Palette className="w-4 h-4" />
                                 Primary Color
                             </label>
                             <div className="flex items-center gap-3 bg-midnight-900/50 border border-white/10 rounded-xl p-3">
                                 <input
+                                    id="team-primary-color"
+                                    name="primaryColor"
                                     type="color"
                                     value={primaryColor}
                                     onChange={(e) => setPrimaryColor(e.target.value)}
@@ -131,12 +141,14 @@ export default function CreateTeamPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                            <label htmlFor="team-secondary-color" className="text-sm font-medium text-gray-400 flex items-center gap-2">
                                 <Palette className="w-4 h-4" />
                                 Secondary Color
                             </label>
                             <div className="flex items-center gap-3 bg-midnight-900/50 border border-white/10 rounded-xl p-3">
                                 <input
+                                    id="team-secondary-color"
+                                    name="secondaryColor"
                                     type="color"
                                     value={secondaryColor}
                                     onChange={(e) => setSecondaryColor(e.target.value)}

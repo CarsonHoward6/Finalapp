@@ -48,8 +48,10 @@ export function PrivacySettingsSection({ initialSettings }: PrivacySettingsSecti
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-400">Profile Visibility</label>
+                    <label htmlFor="privacy-visibility" className="text-sm font-medium text-gray-400">Profile Visibility</label>
                     <select
+                        id="privacy-visibility"
+                        name="profileVisibility"
                         value={settings.profile_visibility}
                         onChange={(e) => setSettings(prev => ({ ...prev, profile_visibility: e.target.value as any }))}
                         className="w-full bg-midnight-900/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-grid-cyan focus:ring-1 focus:ring-grid-cyan transition-all"
@@ -61,12 +63,14 @@ export function PrivacySettingsSection({ initialSettings }: PrivacySettingsSecti
                 </div>
 
                 <div className="space-y-3">
-                    <label className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
+                    <label htmlFor="privacy-online-status" className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
                         <div>
                             <span className="text-gray-300 block">Show Online Status</span>
                             <span className="text-xs text-gray-500">Let others see when you're online</span>
                         </div>
                         <input
+                            id="privacy-online-status"
+                            name="showOnlineStatus"
                             type="checkbox"
                             checked={settings.show_online_status}
                             onChange={(e) => setSettings(prev => ({ ...prev, show_online_status: e.target.checked }))}
@@ -74,12 +78,14 @@ export function PrivacySettingsSection({ initialSettings }: PrivacySettingsSecti
                         />
                     </label>
 
-                    <label className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
+                    <label htmlFor="privacy-show-stats" className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
                         <div>
                             <span className="text-gray-300 block">Show Stats</span>
                             <span className="text-xs text-gray-500">Display your gaming statistics</span>
                         </div>
                         <input
+                            id="privacy-show-stats"
+                            name="showStats"
                             type="checkbox"
                             checked={settings.show_stats}
                             onChange={(e) => setSettings(prev => ({ ...prev, show_stats: e.target.checked }))}
@@ -87,12 +93,14 @@ export function PrivacySettingsSection({ initialSettings }: PrivacySettingsSecti
                         />
                     </label>
 
-                    <label className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
+                    <label htmlFor="privacy-friend-requests" className="flex items-center justify-between p-3 bg-midnight-900/30 rounded-lg hover:bg-midnight-900/50 transition-colors cursor-pointer">
                         <div>
                             <span className="text-gray-300 block">Allow Friend Requests</span>
                             <span className="text-xs text-gray-500">Let others send you friend requests</span>
                         </div>
                         <input
+                            id="privacy-friend-requests"
+                            name="allowFriendRequests"
                             type="checkbox"
                             checked={settings.allow_friend_requests}
                             onChange={(e) => setSettings(prev => ({ ...prev, allow_friend_requests: e.target.checked }))}
