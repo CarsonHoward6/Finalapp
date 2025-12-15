@@ -22,15 +22,22 @@ export async function completeOnboarding(formData: FormData) {
 
     const interests = interestsRaw ? interestsRaw.split(",").filter(Boolean) : [];
 
+    // Prepare default data in case we are creating a new profile
+    const updates = {
+        id: user.id,
+        role,
+        interests,
+        onboarding_completed: true,
+        email: user.email,
+        username: user.email?.split('@')[0] || `user_${user.id.substring(0, 8)}`,
+        full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
+        updated_at: new Date().toISOString(),
+    };
+
     const { error } = await supabase
         .from("profiles")
-        .update({
-            role,
-            interests,
-            onboarding_completed: true,
-            updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
+        .upsert(updates)
+        .select();
 
     if (error) {
         console.error("Onboarding Error:", error);
