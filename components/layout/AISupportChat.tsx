@@ -20,7 +20,7 @@ export function AISupportChat({ isProUser }: AISupportChatProps) {
     const [messages, setMessages] = useState<Message[]>([
         {
             role: "assistant",
-            content: "Hey! 👋 I'm your ProGrid AI assistant. I can help you with:\n\n• Creating tournaments & teams\n• Using the video editor\n• Uploading profile pictures\n• Setting up streams\n• Calendar events\n• And much more!\n\nWhat would you like to know?"
+            content: "Hey! 👋 I'm your ProGrid AI assistant. I can help you with:\n\n• Daily Tournaments (Fortnite @ 10am, Rocket League @ 5pm)\n• Creating & joining tournaments\n• Team creation & management\n• Tournament registration & brackets\n• Profile settings\n\nWhat would you like to know?"
         }
     ]);
     const [input, setInput] = useState("");
@@ -131,7 +131,7 @@ export function AISupportChat({ isProUser }: AISupportChatProps) {
         setMessages([
             {
                 role: "assistant",
-                content: "Hey! 👋 I'm your ProGrid AI assistant. I can help you with:\n\n• Creating tournaments & teams\n• Using the video editor\n• Uploading profile pictures\n• Setting up streams\n• Calendar events\n• And much more!\n\nWhat would you like to know?"
+                content: "Hey! 👋 I'm your ProGrid AI assistant. I can help you with:\n\n• Daily Tournaments (Fortnite @ 10am, Rocket League @ 5pm)\n• Creating & joining tournaments\n• Team creation & management\n• Tournament registration & brackets\n• Profile settings\n\nWhat would you like to know?"
             }
         ]);
     };
@@ -330,7 +330,7 @@ export function AISupportChat({ isProUser }: AISupportChatProps) {
                         </div>
 
                         <p className="text-gray-300 mb-6">
-                            Get instant help with tournaments, teams, video editing, and more from our AI assistant. Available 24/7 for Pro members.
+                            Get instant help with daily tournaments, team management, and registration from our AI assistant. Available 24/7 for Pro members.
                         </p>
 
                         <div className="bg-midnight-900 border border-white/5 rounded-xl p-4 mb-6">
@@ -348,15 +348,15 @@ export function AISupportChat({ isProUser }: AISupportChatProps) {
                                 </li>
                                 <li className="flex items-center gap-2">
                                     <div className="w-1 h-1 rounded-full bg-electric-blue"></div>
-                                    Advanced Analytics
+                                    Priority Tournament Registration
                                 </li>
                                 <li className="flex items-center gap-2">
                                     <div className="w-1 h-1 rounded-full bg-electric-blue"></div>
-                                    Custom Profile Themes
+                                    Team Management Tools
                                 </li>
                                 <li className="flex items-center gap-2">
                                     <div className="w-1 h-1 rounded-full bg-electric-blue"></div>
-                                    Priority Tournament Entry
+                                    Tournament Stats & History
                                 </li>
                             </ul>
                         </div>
