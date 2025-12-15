@@ -16,7 +16,8 @@ export default async function DashboardPage() {
         .single();
 
     // Fetch Upcoming Tournaments (user's organized or joined)
-    let upcomingTournaments = [];
+    // Fetch Upcoming Tournaments (user's organized or joined)
+    let upcomingTournaments: any[] = [];
     if (user) {
         const { data: tournaments } = await supabase
             .from("tournaments")
