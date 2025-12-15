@@ -41,8 +41,14 @@ export default function CreateTeamPage() {
             formData.append("primaryColor", primaryColor);
             formData.append("secondaryColor", secondaryColor);
 
-            await createTeam(formData);
-            // createTeam will redirect to the team page
+            const result = await createTeam(formData);
+
+            if (result.success && result.redirectUrl) {
+                router.push(result.redirectUrl);
+            } else {
+                setError(result.error || "Failed to create team");
+                setIsLoading(false);
+            }
         } catch (err: any) {
             setError(err.message || "Failed to create team");
             setIsLoading(false);

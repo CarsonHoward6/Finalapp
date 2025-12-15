@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createTournament } from "@/app/actions/tournaments";
 import { Trophy, AlignLeft, Calendar, Users, Loader2, GitBranch, Grid3x3, LayoutGrid, Shuffle, DollarSign, Award } from "lucide-react";
 
@@ -57,6 +58,7 @@ const PRIZE_DISTRIBUTIONS = [
 ];
 
 export default function CreateTournamentPage() {
+    const router = useRouter();
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [startDate, setStartDate] = useState("");
@@ -90,8 +92,14 @@ export default function CreateTournamentPage() {
                 formData.append("prizeDistribution", prizeDistribution);
             }
 
-            await createTournament(formData);
-            // createTournament will redirect to the tournament page
+            const result = await createTournament(formData);
+
+            if (result.success && result.redirectUrl) {
+                router.push(result.redirectUrl);
+            } else {
+                setError(result.error || "Failed to create tournament");
+                setIsLoading(false);
+            }
         } catch (err: any) {
             setError(err.message || "Failed to create tournament");
             setIsLoading(false);
