@@ -9,6 +9,8 @@ export default async function DashboardPage() {
     const { data: { user } } = await supabase.auth.getUser();
 
     // Fetch Profile for personalization
+    const { data: profile } = await supabase
+        .from("profiles")
         .select("full_name, role, interests")
         .eq("id", user?.id)
         .single();
