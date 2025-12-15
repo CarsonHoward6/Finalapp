@@ -9,19 +9,21 @@ export default async function DashboardPage() {
     const { data: { user } } = await supabase.auth.getUser();
 
     // Fetch Profile for personalization
-    const { data: profile } = await supabase
-        .from("profiles")
         .select("full_name, role, interests")
         .eq("id", user?.id)
         .single();
 
     // Fetch Upcoming Tournaments (user's organized or joined)
-    const { data: upcomingTournaments } = await supabase
-        .from("tournaments")
-        .select("id, name, start_date, status")
-        .or(`organizer_id.eq.${user?.id}`)
-        .order("start_date", { ascending: true })
-        .limit(5);
+    let upcomingTournaments = [];
+    if (user) {
+        const { data: tournaments } = await supabase
+            .from("tournaments")
+            .select("id, name, start_date, status")
+            .or(`organizer_id.eq.${user.id}`) // Safe now
+            .order("start_date", { ascending: true })
+            .limit(5);
+        upcomingTournaments = tournaments || [];
+    }
 
     // Fetch User's Teams
     const { data: teams } = await supabase
@@ -107,7 +109,7 @@ export default async function DashboardPage() {
                                     <span className="font-medium text-white">{t.name}</span>
                                     <span className={`text-xs uppercase font-bold ${t.status === 'ongoing' ? 'text-green-400' : 'text-gray-500'}`}>{t.status}</span>
                                 </div>
-                                <p className="text-xs text-gray-500 mt-1">{t.start_date ? new Date(t.start_date).toLocaleDateString() : "Date TBD"}</p>
+                                <p className="text-xs text-gray-500 mt-1">{t.start_date ? new Date(t.start_date).toLocaleDateString('en-US', { timeZone: 'UTC' }) : "Date TBD"}</p>
                             </Link>
                         ))}
                         {(!upcomingTournaments || upcomingTournaments.length === 0) && (
