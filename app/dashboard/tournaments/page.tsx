@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { Plus, Trophy, Calendar, Users, Clock, Gamepad2 } from "lucide-react";
-import { ensureDailyTournaments, getAllTournaments, isTournamentOpenForRegistration } from "@/app/actions/tournaments";
+import { ensureDailyTournaments, getAllTournaments } from "@/app/actions/tournaments";
+import { isTournamentOpenForRegistration } from "@/utils/tournament-helpers";
 import { JoinTournamentButton } from "@/components/tournaments/JoinTournamentButton";
 
 export default async function TournamentsListPage() {
