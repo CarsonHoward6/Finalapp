@@ -8,16 +8,18 @@ import { JoinTournamentButton } from "@/components/tournaments/JoinTournamentBut
 export default async function TournamentsListPage() {
     const supabase = await createClient();
     if (!supabase) return <div className="p-8 text-gray-500">Database not configured</div>;
-    const { data: { user } } = await supabase.auth.getUser();
 
-    // Ensure daily tournaments exist
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return <div className="p-8 text-gray-500">Please log in to view tournaments</div>;
+
+    // Try to ensure daily tournaments exist (silently fails if columns don't exist)
     await ensureDailyTournaments();
 
     // Fetch all available tournaments
     const allTournaments = await getAllTournaments();
 
-    // Separate daily and regular tournaments
-    const dailyTournaments = allTournaments.filter((t: any) => t.is_daily);
+    // Separate daily and regular tournaments (safely check is_daily)
+    const dailyTournaments = allTournaments.filter((t: any) => t.is_daily === true);
     const regularTournaments = allTournaments.filter((t: any) => !t.is_daily);
 
     // Fetch tournaments organized by user
@@ -55,10 +57,12 @@ export default async function TournamentsListPage() {
                     {dailyTournaments.map((tournament: any) => {
                         const registration = isTournamentOpenForRegistration(tournament.start_date);
                         const participantCount = countMap.get(tournament.id) || 0;
-                        const isFull = participantCount >= tournament.max_participants;
+                        const isFull = participantCount >= (tournament.max_participants || 16);
                         const isOrganizer = tournament.organizer_id === user?.id;
-                        const startTime = new Date(tournament.start_date);
-                        const gameIcon = tournament.game === "Fortnite" ? "🎮" : "🚗";
+                        const startTime = tournament.start_date ? new Date(tournament.start_date) : new Date();
+                        const gameName = tournament.game || "Tournament";
+                        const gameIcon = gameName.includes("Fortnite") ? "🎮" : "🚗";
+                        const teamSize = tournament.team_size || 1;
 
                         return (
                             <div
@@ -69,8 +73,8 @@ export default async function TournamentsListPage() {
                                     <div className="flex items-center gap-3">
                                         <span className="text-3xl">{gameIcon}</span>
                                         <div>
-                                            <h3 className="text-xl font-bold text-white">{tournament.game}</h3>
-                                            <p className="text-sm text-gray-400">{tournament.team_size}v{tournament.team_size} Tournament</p>
+                                            <h3 className="text-xl font-bold text-white">{gameName}</h3>
+                                            <p className="text-sm text-gray-400">{teamSize}v{teamSize} Tournament</p>
                                         </div>
                                     </div>
                                     <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 font-bold uppercase">
@@ -88,7 +92,7 @@ export default async function TournamentsListPage() {
                                     </div>
                                     <div className="flex items-center gap-2 text-gray-400">
                                         <Users className="w-4 h-4" />
-                                        <span>{participantCount} / {tournament.max_participants} Players</span>
+                                        <span>{participantCount} / {tournament.max_participants || 16} Players</span>
                                     </div>
                                 </div>
 
@@ -131,7 +135,7 @@ export default async function TournamentsListPage() {
 
                     {dailyTournaments.length === 0 && (
                         <div className="col-span-full py-8 text-center text-gray-500">
-                            <p>No daily tournaments available today.</p>
+                            <p>No daily tournaments available. Run the database migration to enable daily tournaments.</p>
                         </div>
                     )}
                 </div>

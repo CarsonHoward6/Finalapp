@@ -11,117 +11,127 @@ export async function getAllTournaments() {
     const supabase = await createClient();
     if (!supabase) return [];
 
-    const { data: tournaments } = await supabase
-        .from("tournaments")
-        .select("*, organizer:profiles(username, avatar_url)")
-        .in("status", ["draft", "registration", "ongoing"])
-        .order("start_date", { ascending: true });
+    try {
+        const { data: tournaments, error } = await supabase
+            .from("tournaments")
+            .select("*, organizer:profiles(username, avatar_url)")
+            .in("status", ["draft", "registration", "ongoing"])
+            .order("start_date", { ascending: true });
 
-    return tournaments || [];
-}
+        if (error) {
+            console.error("Get all tournaments error:", error);
+            return [];
+        }
 
-/**
- * Get daily tournaments for today
- */
-export async function getDailyTournaments() {
-    const supabase = await createClient();
-    if (!supabase) return [];
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const { data: tournaments } = await supabase
-        .from("tournaments")
-        .select("*, organizer:profiles(username, avatar_url)")
-        .eq("is_daily", true)
-        .gte("start_date", today.toISOString())
-        .lt("start_date", tomorrow.toISOString())
-        .order("start_date", { ascending: true });
-
-    return tournaments || [];
+        return tournaments || [];
+    } catch (error) {
+        console.error("Get all tournaments error:", error);
+        return [];
+    }
 }
 
 /**
  * Generate daily tournaments if they don't exist
+ * This function silently fails if the required columns don't exist
  */
 export async function ensureDailyTournaments() {
-    const supabase = await createClient();
-    if (!supabase) return;
+    // Daily tournaments feature requires database migration
+    // Skip silently if columns don't exist
+    try {
+        const supabase = await createClient();
+        if (!supabase) return;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+        // Try to check if columns exist by querying
+        const { error: columnCheckError } = await supabase
+            .from("tournaments")
+            .select("is_daily")
+            .limit(1);
 
-    // Check if today's tournaments already exist
-    const { data: existing } = await supabase
-        .from("tournaments")
-        .select("id, game")
-        .eq("is_daily", true)
-        .gte("start_date", today.toISOString())
-        .lt("start_date", tomorrow.toISOString());
+        // If is_daily column doesn't exist, skip daily tournaments
+        if (columnCheckError) {
+            console.log("Daily tournaments feature not available - run add-daily-tournaments.sql");
+            return;
+        }
 
-    const existingGames = new Set(existing?.map(t => t.game) || []);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // Get a system organizer (first user or admin)
-    const { data: organizer } = await supabase
-        .from("profiles")
-        .select("id")
-        .limit(1)
-        .single();
+        // Check if today's tournaments already exist
+        const { data: existing } = await supabase
+            .from("tournaments")
+            .select("id, game")
+            .eq("is_daily", true)
+            .gte("start_date", today.toISOString())
+            .lt("start_date", tomorrow.toISOString());
 
-    if (!organizer) return;
+        const existingGames = new Set(existing?.map(t => t.game) || []);
 
-    // Randomly select team size for today (1v1, 2v2, 3v3, or 4v4)
-    const teamSizes = [1, 2, 3, 4];
-    const selectedTeamSize = teamSizes[Math.floor(Math.random() * teamSizes.length)];
+        // Get a system organizer (first user or admin)
+        const { data: organizer } = await supabase
+            .from("profiles")
+            .select("id")
+            .limit(1)
+            .single();
 
-    const tournamentsToCreate = [];
+        if (!organizer) return;
 
-    // Fortnite at 10am
-    if (!existingGames.has("Fortnite")) {
-        const fortniteTime = new Date(today);
-        fortniteTime.setHours(10, 0, 0, 0);
+        // Randomly select team size for today (1v1, 2v2, 3v3, or 4v4)
+        const teamSizes = [1, 2, 3, 4];
+        const selectedTeamSize = teamSizes[Math.floor(Math.random() * teamSizes.length)];
 
-        tournamentsToCreate.push({
-            organizer_id: organizer.id,
-            name: `Daily Fortnite ${selectedTeamSize}v${selectedTeamSize} Tournament`,
-            description: `Free daily Fortnite tournament! ${selectedTeamSize}v${selectedTeamSize} bracket. Signup opens 15 minutes before start.`,
-            start_date: fortniteTime.toISOString(),
-            format: "single_elimination",
-            status: "registration",
-            max_participants: 16,
-            entry_fee: 0,
-            game: "Fortnite",
-            team_size: selectedTeamSize,
-            is_daily: true
-        });
-    }
+        const tournamentsToCreate = [];
 
-    // Rocket League at 5pm
-    if (!existingGames.has("Rocket League")) {
-        const rocketLeagueTime = new Date(today);
-        rocketLeagueTime.setHours(17, 0, 0, 0);
+        // Fortnite at 10am
+        if (!existingGames.has("Fortnite")) {
+            const fortniteTime = new Date(today);
+            fortniteTime.setHours(10, 0, 0, 0);
 
-        tournamentsToCreate.push({
-            organizer_id: organizer.id,
-            name: `Daily Rocket League ${selectedTeamSize}v${selectedTeamSize} Tournament`,
-            description: `Free daily Rocket League tournament! ${selectedTeamSize}v${selectedTeamSize} bracket. Signup opens 15 minutes before start.`,
-            start_date: rocketLeagueTime.toISOString(),
-            format: "single_elimination",
-            status: "registration",
-            max_participants: 16,
-            entry_fee: 0,
-            game: "Rocket League",
-            team_size: selectedTeamSize,
-            is_daily: true
-        });
-    }
+            tournamentsToCreate.push({
+                organizer_id: organizer.id,
+                name: `Daily Fortnite ${selectedTeamSize}v${selectedTeamSize} Tournament`,
+                description: `Free daily Fortnite tournament! ${selectedTeamSize}v${selectedTeamSize} bracket. Signup opens 15 minutes before start.`,
+                start_date: fortniteTime.toISOString(),
+                format: "single_elimination",
+                status: "registration",
+                max_participants: 16,
+                entry_fee: 0,
+                game: "Fortnite",
+                team_size: selectedTeamSize,
+                is_daily: true
+            });
+        }
 
-    if (tournamentsToCreate.length > 0) {
-        await supabase.from("tournaments").insert(tournamentsToCreate);
+        // Rocket League at 5pm
+        if (!existingGames.has("Rocket League")) {
+            const rocketLeagueTime = new Date(today);
+            rocketLeagueTime.setHours(17, 0, 0, 0);
+
+            tournamentsToCreate.push({
+                organizer_id: organizer.id,
+                name: `Daily Rocket League ${selectedTeamSize}v${selectedTeamSize} Tournament`,
+                description: `Free daily Rocket League tournament! ${selectedTeamSize}v${selectedTeamSize} bracket. Signup opens 15 minutes before start.`,
+                start_date: rocketLeagueTime.toISOString(),
+                format: "single_elimination",
+                status: "registration",
+                max_participants: 16,
+                entry_fee: 0,
+                game: "Rocket League",
+                team_size: selectedTeamSize,
+                is_daily: true
+            });
+        }
+
+        if (tournamentsToCreate.length > 0) {
+            const { error } = await supabase.from("tournaments").insert(tournamentsToCreate);
+            if (error) {
+                console.log("Failed to create daily tournaments:", error);
+            }
+        }
+    } catch (error) {
+        // Silently fail - daily tournaments feature not available
+        console.log("Daily tournaments feature error:", error);
     }
 }
 
