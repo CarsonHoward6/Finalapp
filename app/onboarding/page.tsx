@@ -4,13 +4,6 @@ import { useState } from "react";
 import { completeOnboarding } from "@/app/actions/onboarding";
 import { Logo } from "@/components/ui/branding/Logo";
 
-const ROLES = [
-    { id: "athlete", label: "Athlete", icon: Trophy, desc: "I compete in traditional sports." },
-    { id: "gamer", label: "Gamer", icon: Gamepad2, desc: "I compete in esports titles." },
-    { id: "coach", label: "Coach", icon: Users, desc: "I manage teams and strategies." },
-    { id: "organizer", label: "Organizer", icon: MonitorPlay, desc: "I host tournaments and events." },
-    { id: "hybrid", label: "Hybrid", icon: User, desc: "I do a bit of everything." },
-];
 
 const INTERESTS_LIST = [
     "Basketball", "Soccer", "Football", "Tennis",
