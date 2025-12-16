@@ -56,28 +56,10 @@ export function AboutSection() {
             description: "Build your team, manage rosters, and compete together"
         },
         {
-            icon: Radio,
-            title: "Live Streaming",
-            description:
-                "Stream your matches and watch others compete in real-time"
-        },
-        {
             icon: BarChart3,
             title: "Analytics",
             description:
                 "Track your performance with detailed stats and insights"
-        },
-        {
-            icon: Shield,
-            title: "Roles & Permissions",
-            description:
-                "Organize with admins, coaches, and players per tournament"
-        },
-        {
-            icon: Gamepad2,
-            title: "Multi-Game Support",
-            description:
-                "Support for all major esports titles and custom games"
         }
     ];
 
@@ -98,8 +80,8 @@ export function AboutSection() {
                     <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
                         Everything You Need to{" "}
                         <span className="bg-gradient-to-r from-electric-blue to-grid-cyan bg-clip-text text-transparent">
-              Compete
-            </span>
+                            Compete
+                        </span>
                     </h2>
                     <p className="text-xl text-gray-400 max-w-2xl mx-auto">
                         ProGrid is the all-in-one platform for competitive people.
