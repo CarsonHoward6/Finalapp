@@ -18,21 +18,16 @@ export async function completeOnboarding(formData: FormData) {
             return { error: "User not authenticated" };
         }
 
-        const role = formData.get("role") as string;
         const interestsRaw = formData.get("interests") as string;
 
-        if (!role) {
-            return { error: "Role is required" };
-        }
-
-        // Validate role against known values if strict enforcement is needed before DB
-        // But DB enum will catch invalid ones now that we added 'athlete'.
+        // Default role to 'player' as per simplification request
+        const role = 'player';
 
         const interests = interestsRaw ? interestsRaw.split(",").filter(Boolean) : [];
 
         const updates = {
             id: user.id,
-            role, // 'athlete' is now a valid enum value
+            role,
             interests,
             onboarding_completed: true, // CRITICAL: Mark as complete
             email: user.email,
@@ -47,11 +42,6 @@ export async function completeOnboarding(formData: FormData) {
             .select();
 
         if (updateError) {
-            // 22P02 is the error code for invalid text representation (enum mismatch)
-            if (updateError.code === '22P02') {
-                console.error("Enum Mismatch Error:", updateError);
-                return { error: `Invalid role selected: ${role}` };
-            }
             console.error("Onboarding Upsert Error:", updateError);
             return { error: "Failed to save profile. Please try again." };
         }
