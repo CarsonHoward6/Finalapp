@@ -33,9 +33,27 @@ export default function OnboardingPage() {
         }
     };
 
-    const handleSubmit = async (formData: FormData) => { // Next.js 15 form action compatible wrapper if needed, but we can call directly? 
-        // Actually, sticking to the standard action prop is safest.
-        // We'll use a hidden input approach for state.
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setIsSubmitting(true);
+
+        try {
+            const formData = new FormData(event.currentTarget);
+            const result = await completeOnboarding(formData);
+
+            if (result?.error) {
+                // You might want to use a toast here ideally, but for now we'll just alert or log
+                console.error(result.error);
+                alert(result.error);
+                setIsSubmitting(false);
+            }
+            // If success, the server action redirects, so we don't need to do anything else 
+            // except maybe keep isSubmitting true to prevent re-clicks.
+        } catch (error) {
+            console.error("Submission failed", error);
+            setIsSubmitting(false);
+            alert("Something went wrong. Please try again.");
+        }
     };
 
     return (
@@ -50,7 +68,7 @@ export default function OnboardingPage() {
                     <p className="text-gray-400">Let's personalize your competitive experience.</p>
                 </div>
 
-                <form action={completeOnboarding} className="bg-midnight-900 border border-white/5 rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
+                <form onSubmit={handleSubmit} className="bg-midnight-900 border border-white/5 rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
 
                     {/* Step 1: Role Selection */}
                     {step === 1 && (
@@ -62,8 +80,8 @@ export default function OnboardingPage() {
                                         key={role.id}
                                         onClick={() => setSelectedRole(role.id)}
                                         className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center gap-4 ${selectedRole === role.id
-                                                ? 'bg-grid-cyan/10 border-grid-cyan ring-1 ring-grid-cyan'
-                                                : 'bg-midnight-800 border-white/5 hover:border-white/20'
+                                            ? 'bg-grid-cyan/10 border-grid-cyan ring-1 ring-grid-cyan'
+                                            : 'bg-midnight-800 border-white/5 hover:border-white/20'
                                             }`}
                                     >
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedRole === role.id ? 'bg-grid-cyan text-midnight-900' : 'bg-midnight-700 text-gray-400'
@@ -106,8 +124,8 @@ export default function OnboardingPage() {
                                         key={interest}
                                         onClick={() => handleInterestToggle(interest)}
                                         className={`cursor-pointer px-4 py-2 rounded-full border text-sm font-medium transition-all ${selectedInterests.includes(interest)
-                                                ? 'bg-electric-blue text-white border-electric-blue'
-                                                : 'bg-midnight-800 border-white/10 text-gray-400 hover:border-white/30'
+                                            ? 'bg-electric-blue text-white border-electric-blue'
+                                            : 'bg-midnight-800 border-white/10 text-gray-400 hover:border-white/30'
                                             }`}
                                     >
                                         {interest}
